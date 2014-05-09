@@ -1,7 +1,7 @@
 ﻿from Tkinter import *
 import random
-from PIL import Image , ImageTk
 import pygame
+from SprManaging import *
 
 pygame.mixer.init()
 pygame.mixer.music.load("Soundtrack.ogg")
@@ -59,7 +59,7 @@ Y=0
 # 29: Monstre regard vers la droite au-dessus d'un mur
 # 30: Monstre regard vers le haut au-dessus d'un mur
 
-
+loadSprites()
 
 #Génération d'une matrice labyrinthique de dimensions widthxheight
 def creerLabyrinthe(width,height,nbMonsters):
@@ -159,207 +159,6 @@ def creerLabyrinthe(width,height,nbMonsters):
     deadMob=[0 for loop in range(nbMonsters)]
     return matrice
 
-
-#Chargement des sprites
-sprites=Image.open(r"Sprites.jpg")
-title=Image.open(r"Title.jpg")
-title = ImageTk.PhotoImage(title)
-background=Image.open(r"Background.jpg")
-#Decoupage de l'image en petites images, avec charD pour character down, soit le personnage vers le bas, etc
-charD = Image.new("RGB", (32,32))
-for j in range(0,32):
-    for i in range(32,64):
-        pixel=sprites.getpixel((i,j))
-        charD.putpixel((i-32,j),(pixel[0],pixel[1],pixel[2]))
-charD = ImageTk.PhotoImage(charD)
-charL = Image.new("RGB", (32,32))
-for j in range(32,64):
-    for i in range(32,64):
-        pixel=sprites.getpixel((i,j))
-        charL.putpixel((i-32,j-32),(pixel[0],pixel[1],pixel[2]))
-charL = ImageTk.PhotoImage(charL)
-charR = Image.new("RGB", (32,32))
-for j in range(64,96):
-    for i in range(32,64):
-        pixel=sprites.getpixel((i,j))
-        charR.putpixel((i-32,j-64),(pixel[0],pixel[1],pixel[2]))
-charR = ImageTk.PhotoImage(charR)
-charU = Image.new("RGB", (32,32))
-for j in range(96,128):
-    for i in range(32,64):
-        pixel=sprites.getpixel((i,j))
-        charU.putpixel((i-32,j-96),(pixel[0],pixel[1],pixel[2]))
-charU = ImageTk.PhotoImage(charU)
-
-wall = Image.new("RGB", (32, 32))
-for j in range(0,32):
-    for i in range(64,96):
-        pixel=sprites.getpixel((i,j))
-        wall.putpixel((i-64,j),(pixel[0],pixel[1],pixel[2]))
-wall = ImageTk.PhotoImage(wall)
-floor = Image.new("RGB", (32,32))
-for j in range(0,32):
-    for i in range(96,128):
-        pixel=sprites.getpixel((i,j))
-        floor.putpixel((i-96,j),(pixel[0],pixel[1],pixel[2]))
-floor = ImageTk.PhotoImage(floor)
-door = Image.new("RGB", (32,32))
-for j in range(32,64):
-    for i in range(64,96):
-        pixel=sprites.getpixel((i,j))
-        door.putpixel((i-64,j-32),(pixel[0],pixel[1],pixel[2]))
-door = ImageTk.PhotoImage(door)
-key = Image.new("RGB", (32,32))
-for j in range(32,64):
-    for i in range(96,128):
-        pixel=sprites.getpixel((i,j))
-        key.putpixel((i-96,j-32),(pixel[0],pixel[1],pixel[2]))
-key = ImageTk.PhotoImage(key)
-
-mobD = Image.new("RGB", (32,32))
-for j in range(64,96):
-    for i in range(64,96):
-        pixel=sprites.getpixel((i,j))
-        mobD.putpixel((i-64,j-64),(pixel[0],pixel[1],pixel[2]))
-mobD = ImageTk.PhotoImage(mobD)
-mobL = Image.new("RGB", (32,32))
-for j in range(96,128):
-    for i in range(96,128):
-        pixel=sprites.getpixel((i,j))
-        mobL.putpixel((i-96,j-96),(pixel[0],pixel[1],pixel[2]))
-mobL = ImageTk.PhotoImage(mobL)
-mobR = Image.new("RGB", (32,32))
-for j in range(96,128):
-    for i in range(64,96):
-        pixel=sprites.getpixel((i,j))
-        mobR.putpixel((i-64,j-96),(pixel[0],pixel[1],pixel[2]))
-mobR = ImageTk.PhotoImage(mobR)
-mobU = Image.new("RGB", (32,32))
-for j in range(64,96):
-    for i in range(96,128):
-        pixel=sprites.getpixel((i,j))
-        mobU.putpixel((i-96,j-64),(pixel[0],pixel[1],pixel[2]))
-mobU = ImageTk.PhotoImage(mobU)
-
-mobDW = Image.new("RGB", (32,32))
-for j in range(96,128):
-    for i in range(128,160):
-        pixel=sprites.getpixel((i,j))
-        mobDW.putpixel((i-128,j-96),(pixel[0],pixel[1],pixel[2]))
-mobDW = ImageTk.PhotoImage(mobDW)
-mobUW = Image.new("RGB", (32,32))
-for j in range(96,128):
-    for i in range(160,192):
-        pixel=sprites.getpixel((i,j))
-        mobUW.putpixel((i-160,j-96),(pixel[0],pixel[1],pixel[2]))
-mobUW = ImageTk.PhotoImage(mobUW)
-mobRW = Image.new("RGB", (32,32))
-for j in range(96,128):
-    for i in range(192,224):
-        pixel=sprites.getpixel((i,j))
-        mobRW.putpixel((i-192,j-96),(pixel[0],pixel[1],pixel[2]))
-mobRW = ImageTk.PhotoImage(mobRW)
-mobLW = Image.new("RGB", (32,32))
-for j in range(96,128):
-    for i in range(224,256):
-        pixel=sprites.getpixel((i,j))
-        mobLW.putpixel((i-224,j-96),(pixel[0],pixel[1],pixel[2]))
-mobLW = ImageTk.PhotoImage(mobLW)
-
-button = Image.new("RGB",(96,32))
-for j in range(64,96):
-    for i in range(128,224):
-        pixel=sprites.getpixel((i,j))
-        button.putpixel((i-128,j-64),(pixel[0],pixel[1],pixel[2]))
-button = ImageTk.PhotoImage(button)
-
-whipH = Image.new("RGB", (32,32))
-for j in range(0,32):
-    for i in range(160,192):
-        pixel=sprites.getpixel((i,j))
-        whipH.putpixel((i-160,j),(pixel[0],pixel[1],pixel[2]))
-whipH = ImageTk.PhotoImage(whipH)
-whipD = Image.new("RGB", (32,32))
-for j in range(0,32):
-    for i in range(192,224):
-        pixel=sprites.getpixel((i,j))
-        whipD.putpixel((i-192,j),(pixel[0],pixel[1],pixel[2]))
-whipD = ImageTk.PhotoImage(whipD)
-whipU = Image.new("RGB", (32,32))
-for j in range(0,32):
-    for i in range(128,160):
-        pixel=sprites.getpixel((i,j))
-        whipU.putpixel((i-128,j),(pixel[0],pixel[1],pixel[2]))
-whipU = ImageTk.PhotoImage(whipU)
-
-whipEndU = Image.new("RGB", (32,32))
-for j in range(32,64):
-    for i in range(128,160):
-        pixel=sprites.getpixel((i,j))
-        whipEndU.putpixel((i-128,j-32),(pixel[0],pixel[1],pixel[2]))
-whipEndU = ImageTk.PhotoImage(whipEndU)
-whipEndD = Image.new("RGB", (32,32))
-for j in range(32,64):
-    for i in range(160,192):
-        pixel=sprites.getpixel((i,j))
-        whipEndD.putpixel((i-160,j-32),(pixel[0],pixel[1],pixel[2]))
-whipEndD = ImageTk.PhotoImage(whipEndD)
-whipEndR = Image.new("RGB", (32,32))
-for j in range(32,64):
-    for i in range(192,224):
-        pixel=sprites.getpixel((i,j))
-        whipEndR.putpixel((i-192,j-32),(pixel[0],pixel[1],pixel[2]))
-whipEndR = ImageTk.PhotoImage(whipEndR)
-whipEndL = Image.new("RGB", (32,32))
-for j in range(32,64):
-    for i in range(224,256):
-        pixel=sprites.getpixel((i,j))
-        whipEndL.putpixel((i-224,j-32),(pixel[0],pixel[1],pixel[2]))
-whipEndL = ImageTk.PhotoImage(whipEndL)
-
-charRW = Image.new("RGB", (32,32))
-for j in range(64,96):
-    for i in range(0,32):
-        pixel=sprites.getpixel((i,j))
-        charRW.putpixel((i,j-64),(pixel[0],pixel[1],pixel[2]))
-charRW = ImageTk.PhotoImage(charRW)
-charLW = Image.new("RGB", (32,32))
-for j in range(32,64):
-    for i in range(0,32):
-        pixel=sprites.getpixel((i,j))
-        charLW.putpixel((i,j-32),(pixel[0],pixel[1],pixel[2]))
-charLW = ImageTk.PhotoImage(charLW)
-charUW = Image.new("RGB", (32,32))
-for j in range(96,128):
-    for i in range(0,32):
-        pixel=sprites.getpixel((i,j))
-        charUW.putpixel((i,j-96),(pixel[0],pixel[1],pixel[2]))
-charUW = ImageTk.PhotoImage(charUW)
-charDW = Image.new("RGB", (32,32))
-for j in range(0,32):
-    for i in range(0,32):
-        pixel=sprites.getpixel((i,j))
-        charDW.putpixel((i,j),(pixel[0],pixel[1],pixel[2]))
-charDW = ImageTk.PhotoImage(charDW)
-
-border = Image.new("RGB", (192,352))
-for j in range(0,352):
-    for i in range(0,192):
-        pixel=background.getpixel((i,j))
-        border.putpixel((i,j),(pixel[0],pixel[1],pixel[2]))
-border = ImageTk.PhotoImage(border)
-line = Image.new("RGB", (96,32))
-for j in range(0,32):
-    for i in range(0,96):
-        pixel=background.getpixel((i,j))
-        line.putpixel((i,j),(pixel[0],pixel[1],pixel[2]))
-line = ImageTk.PhotoImage(line)
-bottom = Image.new("RGB", (96,192))
-for j in range(0,192):
-    for i in range(0,96):
-        pixel=background.getpixel((i,j))
-        bottom.putpixel((i,j),(pixel[0],pixel[1],pixel[2]))
-bottom = ImageTk.PhotoImage(bottom)
 
 #Si une touche est enfoncée
 def keydown(event):
@@ -600,77 +399,77 @@ def draw(canevas):
 
                 # on cree une image aux coordonnees i2 j2 selon la valeur de x
                 if x==1 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=floor) #Sol
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.floor) #Sol
                 elif x==0 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=wall) #Mur
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.wall) #Mur
                 elif x==2 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=door) #Porte
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.door) #Porte
                 elif x==3 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=charD) #Personnage vers le bas
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charD) #Personnage vers le bas
                 elif x==4 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=charL) #Personnage vers la gauche
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charL) #Personnage vers la gauche
                 elif x==5 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=charR) #Personnage vers la droite
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charR) #Personnage vers la droite
                 elif x==6 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=charU) #Personnage vers le haut
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charU) #Personnage vers le haut
                 elif x==7 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=mobD) #Monstre vers le bas
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobD) #Monstre vers le bas
                 elif x==8 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=mobL) #Monstre vers la gauche
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobL) #Monstre vers la gauche
                 elif x==9 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=mobR) #Monstre vers la droite
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobR) #Monstre vers la droite
                 elif x==10 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=mobU) #Monstre vers le haut
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobU) #Monstre vers le haut
                 elif x==11 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=whipD) #Fouet droit vers le bas
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipD) #Fouet droit vers le bas
                 elif x==12 or x==13:
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=whipH) #Fouet droit horizontal
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipH) #Fouet droit horizontal
                 elif x==14 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=whipU) #Fouet droit vers le haut
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipU) #Fouet droit vers le haut
                 elif x==15 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=whipEndD) #Fin du fouet vers le bas
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndD) #Fin du fouet vers le bas
                 elif x==16 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=whipEndL) #Fin du fouet vers la gauche
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndL) #Fin du fouet vers la gauche
                 elif x==17 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=whipEndR) #Fin du fouet vers la droite
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndR) #Fin du fouet vers la droite
                 elif x==18 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=whipEndU) #Fin du fouet vers le haut
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndU) #Fin du fouet vers le haut
                 elif x==23 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=charDW) #Personnage vers le bas fouettant
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charDW) #Personnage vers le bas fouettant
                 elif x==24 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=charLW) #Personnage vers la gauche fouettant
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charLW) #Personnage vers la gauche fouettant
                 elif x==25 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=charRW) #Personnage vers la droite fouettant
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charRW) #Personnage vers la droite fouettant
                 elif x==26 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=charUW) #Personnage vers le haut fouettant
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charUW) #Personnage vers le haut fouettant
                 elif x==27 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=mobDW) #Monstre vers le bas au-dessus d'un mur
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobDW) #Monstre vers le bas au-dessus d'un mur
                 elif x==28 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=mobLW) #Monstre vers la gauche au-dessus d'un mur
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobLW) #Monstre vers la gauche au-dessus d'un mur
                 elif x==29 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=mobRW) #Monstre vers la droite au-dessus d'un mur
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobRW) #Monstre vers la droite au-dessus d'un mur
                 elif x==30 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=mobUW) #Monstre vers le haut au-dessus d'un mur
+                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobUW) #Monstre vers le haut au-dessus d'un mur
 
 
 def initialscreen():
-    label1=Label(fenetre,image=title,bd=-2)
+    label1=Label(fenetre,image=SG.title,bd=-2)
     label1.place(x=0,y=0)
-    label2=Label(fenetre,image=border,bd=-2)
+    label2=Label(fenetre,image=SG.border,bd=-2)
     label2.place(x=0,y=4*32)
-    label3=Label(fenetre,image=border,bd=-2)
+    label3=Label(fenetre,image=SG.border,bd=-2)
     label3.place(x=9*32,y=4*32)
-    label4=Label(fenetre,image=line,bd=-2)
+    label4=Label(fenetre,image=SG.line,bd=-2)
     label4.place(x=6*32,y=5*32)
-    label5=Label(fenetre,image=line,bd=-2)
+    label5=Label(fenetre,image=SG.line,bd=-2)
     label5.place(x=6*32,y=7*32)
-    label6=Label(fenetre,image=bottom,bd=-2)
+    label6=Label(fenetre,image=SG.bottom,bd=-2)
     label6.place(x=6*32,y=9*32)
-    button1=Button(fenetre, text="Easy" ,command=easygame ,image=button,compound=CENTER,bd=0,fg='White',highlightthickness=0,height=32,width=96)
+    button1=Button(fenetre, text="Easy" ,command=easygame ,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0,height=32,width=96)
     button1.place(x=6*32,y=4*32)
-    button2=Button(fenetre, text="Medium", command=mediumgame,image=button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button2=Button(fenetre, text="Medium", command=mediumgame,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
     button2.place(x=6*32,y=6*32)
-    button3=Button(fenetre, text="Hard", command=hardgame,image=button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button3=Button(fenetre, text="Hard", command=hardgame,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
     button3.place(x=6*32,y=8*32)
     fenetre.geometry("%dx%d%+d%+d" % (480,480,(fenetre.winfo_screenwidth()-480)//2,(fenetre.winfo_screenheight()-480)//2))
     fenetre.mainloop()
