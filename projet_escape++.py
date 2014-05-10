@@ -401,7 +401,7 @@ def keyrelease(event):
 
 #Dessin du canevas de jeu
 def draw(canevas):
-    global matrice,charPos,charVel,mobPos,mobVel,mobTimer,look,gameInProgress,doorReached
+    global matrice,charPos,charVel,mobPos,mobVel,mobTimer,look,gameInProgress,doorReached,charKilled
     # si le personnage est sur la porte
     if matrice[charPos[Y]+charVel[Y]][charPos[X]+charVel[X]]==2:
         gameInProgress=0
@@ -429,12 +429,8 @@ def draw(canevas):
         for mobID in range(nbMonsters):
             mobManagement(mobID)
             if mobPos[mobID][Y]==charPos[Y] and mobPos[mobID][X]==charPos[X]:
-                canevas.delete(ALL)
-                canevas.create_rectangle(0,0,480,480,fill="black")
-                canevas.create_text(235,235,text="GAME OVER",fill="red", font=50)
-                canevas.update()
-                canevas.after(3000)
-                matrice=creerLabyrinthe(width,height,nbMonsters)
+                gameInProgress=0
+                charKilled=1
 
         # gestion du fouet
         whipManagement(charPos,look)
@@ -615,14 +611,22 @@ def displayPauseMenu():
     button3.place(x=6*32,y=8*32)
 
 def displayVictoryScreen():
-    # creer ecran de fin
     canevas.delete(ALL)
     canevas.create_image(240,240,image=SG.textsheet)
     canevas.create_text(240,240,text="You escaped in "+str(timerMinute)+":"+str(timerSecond)+" !",fill="Black",font=1500)
     canevas.update()
-    # attendre 3s avant que le jeu recommence
-    canevas.after(3000)
+    canevas.after(5000)
     displayMainMenu()
+
+def displayDeathScreen():
+    canevas.delete(ALL)
+    canevas.create_image(240,240,image=SG.textsheet)
+    canevas.create_text(235,225,text="The demon devoured your flesh",fill="Black", font=1500)
+    canevas.create_text(235,245,text="and your soul is now wandering in the limbos...",fill="Black", font=1500)
+    canevas.update()
+    canevas.after(5000)
+    displayMainMenu()
+
 
 #Traitement des entrees clavier
 fenetre.bind_all("<KeyPress>",keydown)
