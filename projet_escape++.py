@@ -135,6 +135,10 @@ def creerLabyrinthe(width,height,nbMonsters):
             l.append([loop,width-2])
     alea2=random.randint(0,len(l)-1)
     matrice[l[alea2][Y]][l[alea2][X]]=2
+    if l[alea2][Y]<2:
+        matrice[l[alea2][Y]-1][l[alea2][X]]=1
+    else:
+        matrice[l[alea2][Y]][l[alea2][X]+1]=1
     #Placement du personnage, que l'on informe dans la liste CharPos[y,x] et initialisation de sa vitesse CharVel[y,x]
     matrice[height-3][2]=3
     charPos=[height-3,2]
