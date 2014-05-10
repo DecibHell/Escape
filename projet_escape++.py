@@ -21,9 +21,8 @@ q=0
 s=0
 d=0
 mobSpawnZone=[[3],[2,4],[1,3,5]]
-##whipping=0
-whipping=1 # TODO pour debug
-##whiptimer=0
+whipping=0
+whiptimer=0
 X=1
 Y=0
 
@@ -60,7 +59,7 @@ loadSprites()
 
 #Génération d'une matrice labyrinthique de dimensions widthxheight
 def creerLabyrinthe(width,height,nbMonsters):
-    global charPos,charVel,look,mobPos,mobVel,deadMob,seen,mobLook,compteurMob
+    global charPos,charVel,look,mobPos,mobVel,deadMob,seen,mobLook,compteurMob,matrice
     #matrice remplie de 0
     matrice2=[[0]*(width/2) for i in range(height/2)]
     matrice=[[0]*width for i in range(height)]
@@ -128,10 +127,10 @@ def creerLabyrinthe(width,height,nbMonsters):
     l=[]
     #Placement aleatoire de la porte
     for loop in range(2,width-3):
-        if matrice[2][loop]==1:
+        if isBlockEmpty(loop,2):
             l.append([1,loop])
     for loop in range(2,height-3):
-        if matrice[loop][width-3]==1:
+        if isBlockEmpty(width-3,loop):
             l.append([loop,width-2])
     alea2=random.randint(0,len(l)-1)
     matrice[l[alea2][Y]][l[alea2][X]]=2
@@ -166,50 +165,54 @@ def creerLabyrinthe(width,height,nbMonsters):
 
 def mobManagement(mobID):
     global mobVel,mobPos,matrice,mobLook,compteurMob,seen
-    if seen[mobID]==0:
-        alea=random.randint(1,4)
-        if alea==1:
-            mobVel[mobID]=[0,1]
-        elif alea==2:
-            mobVel[mobID]=[0,-1]
-        elif alea==3:
-            mobVel[mobID]=[1,0]
-        elif alea==4:
-            mobVel[mobID]=[-1,0]
-        if matrice[mobPos[mobID][Y]+mobVel[mobID][Y]][mobPos[mobID][X]+mobVel[mobID][X]]!=1:
-            mobVel[mobID]=[0,0]
-    else:
-        xDiff=charPos[X]-mobPos[mobID][X]
-        yDiff=charPos[Y]-mobPos[mobID][Y]
-        if abs(xDiff)>abs(yDiff):
-            mobVel[mobID]=[0,xDiff/abs(xDiff)]
+    if isBlockWhip(mobPos[mobID][X],mobPos[mobID][Y]):
+        deadMob[mobID]=1
+        mobPos[mobID]=[0,0]
+    if deadMob[mobID]==0:
+        if seen[mobID]==0:
+            alea=random.randint(1,4)
+            if alea==1:
+                mobVel[mobID]=[0,1]
+            elif alea==2:
+                mobVel[mobID]=[0,-1]
+            elif alea==3:
+                mobVel[mobID]=[1,0]
+            elif alea==4:
+                mobVel[mobID]=[-1,0]
+            if not isBlockEmpty(mobPos[mobID][X]+mobVel[mobID][X],mobPos[mobID][Y]+mobVel[mobID][Y]):
+                mobVel[mobID]=[0,0]
         else:
-            mobVel[mobID]=[yDiff/abs(yDiff),0]
+            xDiff=charPos[X]-mobPos[mobID][X]
+            yDiff=charPos[Y]-mobPos[mobID][Y]
+            if abs(xDiff)>abs(yDiff) and xDiff!=0:
+                mobVel[mobID]=[0,xDiff/abs(xDiff)]
+            elif yDiff!=0:
+                mobVel[mobID]=[yDiff/abs(yDiff),0]
 
-    if compteurMob[mobID]>=mobSpeed:
-        compteurMob[mobID]=1
-        if mobLook[mobID]<11:
-            matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=1
-        else :
-            matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=0
-        mobPos[mobID][X]+=mobVel[mobID][X]
-        mobPos[mobID][Y]+=mobVel[mobID][Y]
-        if mobVel[mobID][Y]==1:
-            mobLook[mobID]=7
-        elif mobVel[mobID][X]==-1:
-            mobLook[mobID]=8
-        elif mobVel[mobID][X]==1:
-            mobLook[mobID]=9
-        elif mobVel[mobID][Y]==-1:
-            mobLook[mobID]=10
-        if matrice[mobPos[mobID][Y]][mobPos[mobID][X]]==0:
-            mobLook[mobID]+=20
-        matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=mobLook[mobID]
-    else:
-        compteurMob[mobID]+=1
+        if compteurMob[mobID]>=mobSpeed:
+            compteurMob[mobID]=1
+            if mobLook[mobID]<11:
+                matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=1
+            else :
+                matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=0
+            mobPos[mobID][X]+=mobVel[mobID][X]
+            mobPos[mobID][Y]+=mobVel[mobID][Y]
+            if mobVel[mobID][Y]==1:
+                mobLook[mobID]=7
+            elif mobVel[mobID][X]==-1:
+                mobLook[mobID]=8
+            elif mobVel[mobID][X]==1:
+                mobLook[mobID]=9
+            elif mobVel[mobID][Y]==-1:
+                mobLook[mobID]=10
+            if matrice[mobPos[mobID][Y]][mobPos[mobID][X]]==0:
+                mobLook[mobID]+=20
+            matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=mobLook[mobID]
+        else:
+            compteurMob[mobID]+=1
 
-    if charPos[Y]-5<=mobPos[mobID][Y] and charPos[Y]+5>=mobPos[mobID][Y] and charPos[X]-5<=mobPos[mobID][X] and charPos[X]+5>=mobPos[mobID][X]:
-        seen[mobID]=1
+        if charPos[Y]-5<=mobPos[mobID][Y] and charPos[Y]+5>=mobPos[mobID][Y] and charPos[X]-5<=mobPos[mobID][X] and charPos[X]+5>=mobPos[mobID][X]:
+            seen[mobID]=1
 
 def displayScreen(canevas,matrice,charPos):
     #ecran= zone de la matrice autour du personnage que l'on souhaite afficher
@@ -306,7 +309,7 @@ def displayBlock(canevas,x,i2,j2):
 #Si une touche est enfoncée
 def keydown(event):
     key=event.keysym
-    global charVel,z,q,s,d,quit
+    global charVel,z,q,s,d,quit,whipping
     if key=="Up":
         charVel[X]=0                #Si le personnage se deplace horizontalement, alors il perd sa vitesse selon l'axe x
         charVel[Y]=-1               #Quand on appuye sur "z" le personnage se dirige vers le haut
@@ -389,7 +392,7 @@ def draw(canevas):
         matrice=creerLabyrinthe(width,height,nbMonsters)
     else:
         #Si la nouvelle position du personnage est un bloc de sol
-        if isBlockOnFloor(charPos[Y]+charVel[Y],charPos[X]+charVel[X]):
+        if isBlockOnFloor(charPos[X]+charVel[X],charPos[Y]+charVel[Y]):
             #On le deplace dans la matrice
             matrice[charPos[Y]][charPos[X]]=1
             #On informe la variable "CharPos" de sa nouvelle position
@@ -423,7 +426,7 @@ def draw(canevas):
         displayScreen(canevas,matrice,charPos)
 
 def whipManagement(charPos,look):
-    global matrice
+    global matrice,whiptimer,whipping,deadMob
     endedwhip=0
     if whipping==1:
         if look==3:
@@ -448,23 +451,25 @@ def whipManagement(charPos,look):
                 endedwhip=1
             elif endedwhip==0:
                 matrice[charPos[Y]][charPos[X]]=look+20
-                # TODO : Est ce que le mob est mort ?
-##                if matrice[xposition][yposition]==7 or matrice[xposition][yposition]==8 or matrice[xposition][yposition]==9 or matrice[xposition][yposition]==10:
-##                    for loop2 in range(nbMonsters):
-##                        if mobPos==[xposition,yposition]:
-##                            deadMob[loop2]=1
+##                if isBlockMobOnFloor(xposition,yposition):  # #
+##                    print "Mob détecté"
+##                    for loop2 in range(nbMonsters):         # #
+##                        if mobPos==[yposition,xposition]:   # #
+##                            print "Mob Tué"
+##                            deadMob[loop2]=1                # #
                 if (isBlockOnFloor(xposition2,yposition2)) and loop<2:
-                    matrice[xposition][yposition]=look+8
+                    matrice[yposition][xposition]=look+8
                 else:
-                    matrice[xposition][yposition]=look+12
+                    matrice[yposition][xposition]=look+12
                     endedwhip=1
-##            whiptimer+=1
-##        if whiptimer>=27:
-##            whipping=0
-##            for j in range(height):
-##                for i in range(width):
-##                    if matrice[j][i]>=11 and matrice[j][i]<=18:
-##                        matrice[j][i]=1
+        whiptimer+=1
+        if whiptimer>=20:
+            whipping=0
+            whiptimer=0
+            for j in range(height):
+                for i in range(width):
+                    if matrice[j][i]>=11 and matrice[j][i]<=18:
+                        matrice[j][i]=1
 
 # Renvoie TRUE si le block est un sol (même avec un objet/personnage dessus).
 # Renvoie FALSE si on est en dehors de la matrice
@@ -473,7 +478,43 @@ def isBlockOnFloor(x,y):
         return False
     if y<0 or y>=height:
         return False
-    if matrice[x][y]!=0 and matrice[x][y]!=2 and matrice[x][y]<27:
+    if matrice[y][x]!=0 and matrice[y][x]!=2 and matrice[y][x]<27:
+        return True
+    else:
+        return False
+
+# Renvoie TRUE si le block est un monstre sur le sol
+# Renvoie FALSE si on est en dehors de la matrice
+def isBlockMobOnFloor(x,y):
+    if x<0 or x>=width:
+        return False
+    if y<0 or y>=height:
+        return False
+    if matrice[y][x]>=7 and matrice[y][x]<=10:
+        return True
+    else:
+        return False
+
+# Renvoie TRUE si le block est un morceau de fouet (bout compris)
+# Renvoie FALSE si on est en dehors de la matrice
+def isBlockWhip(x,y):
+    if x<0 or x>=width:
+        return False
+    if y<0 or y>=height:
+        return False
+    if matrice[y][x]>=11 and matrice[y][x]<=18:
+        return True
+    else:
+        return False
+
+# Renvoie TRUE si le block est un sol vide
+# Renvoie FALSE si on est en dehors de la matrice
+def isBlockEmpty(x,y):
+    if x<0 or x>=width:
+        return False
+    if y<0 or y>=height:
+        return False
+    if matrice[y][x]==1:
         return True
     else:
         return False
