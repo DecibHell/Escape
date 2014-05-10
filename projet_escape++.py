@@ -277,58 +277,7 @@ def displayScreen(canevas,matrice,charPos):
             displayBlock(canevas,x,i2,j2)
 
 def displayBlock(canevas,x,i2,j2):
-    if x==1 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.floor) #Sol
-    elif x==0 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.wall) #Mur
-    elif x==2 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.door) #Porte
-    elif x==3 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charD) #Personnage vers le bas
-    elif x==4 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charL) #Personnage vers la gauche
-    elif x==5 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charR) #Personnage vers la droite
-    elif x==6 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charU) #Personnage vers le haut
-    elif x==7 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobD) #Monstre vers le bas
-    elif x==8 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobL) #Monstre vers la gauche
-    elif x==9 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobR) #Monstre vers la droite
-    elif x==10 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobU) #Monstre vers le haut
-    elif x==11 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipD) #Fouet droit vers le bas
-    elif x==12 or x==13:
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipH) #Fouet droit horizontal
-    elif x==14 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipU) #Fouet droit vers le haut
-    elif x==15 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndD) #Fin du fouet vers le bas
-    elif x==16 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndL) #Fin du fouet vers la gauche
-    elif x==17 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndR) #Fin du fouet vers la droite
-    elif x==18 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndU) #Fin du fouet vers le haut
-    elif x==23 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charDW) #Personnage vers le bas fouettant
-    elif x==24 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charLW) #Personnage vers la gauche fouettant
-    elif x==25 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charRW) #Personnage vers la droite fouettant
-    elif x==26 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charUW) #Personnage vers le haut fouettant
-    elif x==27 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobDW) #Monstre vers le bas au-dessus d'un mur
-    elif x==28 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobLW) #Monstre vers la gauche au-dessus d'un mur
-    elif x==29 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobRW) #Monstre vers la droite au-dessus d'un mur
-    elif x==30 :
-        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobUW) #Monstre vers le haut au-dessus d'un mur
+    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.blocks[x])
 
 def doWhip():
     global whipTimer,whipping,charVel

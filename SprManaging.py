@@ -36,6 +36,7 @@ class SG:
     whipEndL=None
     whipEndU=None
     whipEndR=None
+    blocks=[]
 
 # Extrait un sprite de la page des sprites, aux coords (x,y) et de taille (width, height)
 def cutSprite(sprites,y,x,width,height):
@@ -95,3 +96,10 @@ def loadSprites():
     SG.border = cutSprite(background,0,0,192,352)
     SG.line = cutSprite(background,0,0,96,32)
     SG.bottom = cutSprite(background,0,0,96,192)
+    SG.blocks = [ SG.wall, SG.floor, SG.door, \
+               SG.charD, SG.charL, SG.charR, SG.charU, \
+               SG.mobD, SG.mobL, SG.mobR, SG.mobU, \
+               SG.whipD, SG.whipH, SG.whipH, SG.whipU, SG.whipEndD, SG.whipEndL, SG.whipEndR, SG.whipEndU, \
+               0, 0, 0, 0, SG.charDW, SG.charLW, SG.charRW, SG.charUW, \
+               SG.mobDW, SG.mobLW, SG.mobRW, SG.mobUW ]
+
