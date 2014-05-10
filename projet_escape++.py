@@ -319,50 +319,49 @@ def draw(canevas):
                 canevas.after(3000)
                 matrice=creerLabyrinthe(width,height,nbMonsters)
 
-##        if whipping==1:
-##            whipping=2
-##            for loop in range(3):
-##                if look==3:
-##                    xposition=charPos[Y]+(loop+1)
-##                    yposition=charPos[X]
-##                    xposition2=charPos[Y]+(loop+2)
-##                    yposition2=charPos[X]
-##                if look==4:
-##                    xposition=charPos[Y]
-##                    yposition=charPos[X]-(loop+1)
-##                    xposition2=charPos[Y]
-##                    yposition2=charPos[X]-(loop+2)
-##                if look==5:
-##                    xposition=charPos[Y]
-##                    yposition=charPos[X]+(loop+1)
-##                    xposition2=charPos[Y]
-##                    yposition2=charPos[X]+(loop+2)
-##                if look==6:
-##                    xposition=charPos[Y]-(loop+1)
-##                    yposition=charPos[X]
-##                    xposition2=charPos[Y]-(loop+2)
-##                    yposition2=charPos[X]
-##
-##                if matrice[xposition][yposition]==0 and endedwhip==0:
-##                    endedwhip=1
-##                elif endedwhip==0:
-##                    matrice[charPos[Y]][charPos[X]]=look+20
-##                    if matrice[xposition][yposition]==7 or matrice[xposition][yposition]==8 or matrice[xposition][yposition]==9 or matrice[xposition][yposition]==10:
-##                        for loop2 in range(nbMonsters):
-##                            if mobPos==[xposition,yposition]:
-##                                deadMob[loop2]=1
-##                    if (matrice[xposition2][yposition2]==1 or matrice[xposition2][yposition2]==7 or matrice[xposition2][yposition2]==8 or matrice[xposition2][yposition2]==9 or matrice[xposition2][yposition2]==10) and loop<2:
-##                        matrice[xposition][yposition]=look+8
-##                    else:
-##                        matrice[xposition][yposition]=look+12
-##                        endedwhip=1
-##                whiptimer+=1
-##            if whiptimer>=27:
-##                whipping=0
-##                for j in range(height):
-##                    for i in range(width):
-##                        if matrice[j][i]>=11 and matrice[j][i]<=18:
-##                            matrice[j][i]=1
+        if whipping==1:
+            for loop in range(3):
+                if look==3:
+                    xposition=charPos[Y]+(loop+1)
+                    yposition=charPos[X]
+                    xposition2=charPos[Y]+(loop+2)
+                    yposition2=charPos[X]
+                if look==4:
+                    xposition=charPos[Y]
+                    yposition=charPos[X]-(loop+1)
+                    xposition2=charPos[Y]
+                    yposition2=charPos[X]-(loop+2)
+                if look==5:
+                    xposition=charPos[Y]
+                    yposition=charPos[X]+(loop+1)
+                    xposition2=charPos[Y]
+                    yposition2=charPos[X]+(loop+2)
+                if look==6:
+                    xposition=charPos[Y]-(loop+1)
+                    yposition=charPos[X]
+                    xposition2=charPos[Y]-(loop+2)
+                    yposition2=charPos[X]
+
+                if matrice[xposition][yposition]==0 and endedwhip==0:
+                    endedwhip=1
+                elif endedwhip==0:
+                    matrice[charPos[Y]][charPos[X]]=look+20
+                    if matrice[xposition][yposition]==7 or matrice[xposition][yposition]==8 or matrice[xposition][yposition]==9 or matrice[xposition][yposition]==10:
+                        for loop2 in range(nbMonsters):
+                            if mobPos==[xposition,yposition]:
+                                deadMob[loop2]=1
+                    if (matrice[xposition2][yposition2]==1 or matrice[xposition2][yposition2]==7 or matrice[xposition2][yposition2]==8 or matrice[xposition2][yposition2]==9 or matrice[xposition2][yposition2]==10) and loop<2:
+                        matrice[xposition][yposition]=look+8
+                    else:
+                        matrice[xposition][yposition]=look+12
+                        endedwhip=1
+                whiptimer+=1
+            if whiptimer>=27:
+                whipping=0
+                for j in range(height):
+                    for i in range(width):
+                        if matrice[j][i]>=11 and matrice[j][i]<=18:
+                            matrice[j][i]=1
 
         #ecran= zone de la matrice autour du personnage que l'on souhaite afficher
         ecran = [charPos[X]-ecart_ecran,charPos[X]+ecart_ecran,charPos[Y]-ecart_ecran,charPos[Y]+ecart_ecran] #premierx,dernierx,premier y, et dernier y de l'ecran
