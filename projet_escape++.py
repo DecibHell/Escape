@@ -385,22 +385,22 @@ def draw(canevas):
         matrice=creerLabyrinthe(width,height,nbMonsters)
     else:
         #Si la nouvelle position du personnage est un bloc de sol
-        if matrice[charPos[Y]+charVel[Y]][charPos[X]+charVel[X]]==1:
+        if isBlockOnFloor(charPos[Y]+charVel[Y],charPos[X]+charVel[X]):
             #On le deplace dans la matrice
             matrice[charPos[Y]][charPos[X]]=1
             #On informe la variable "CharPos" de sa nouvelle position
             charPos[X]+=charVel[X]
             charPos[Y]+=charVel[Y]
             #La variable look informe le regard du personnage en fonction de son dernier deplacement
-            if charVel[Y]==1:
-                look=3
-            elif charVel[X]==-1:
-                look=4
-            elif charVel[X]==1:
-                look=5
-            elif charVel[Y]==-1:
-                look=6
-            matrice[charPos[Y]][charPos[X]]=look    #On place le personnage a sa nouvelle position dans la matrice
+        if charVel[Y]==1:
+            look=3
+        elif charVel[X]==-1:
+            look=4
+        elif charVel[X]==1:
+            look=5
+        elif charVel[Y]==-1:
+            look=6
+        matrice[charPos[Y]][charPos[X]]=look    #On place le personnage a sa nouvelle position dans la matrice
 
         # gestion des monstres
         for mobID in range(nbMonsters):
