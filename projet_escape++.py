@@ -22,15 +22,18 @@ fenetre.geometry("%dx%d%+d%+d" % (480,480,(fenetre.winfo_screenwidth()-480)//2,(
 
 resolution=32
 ecart_ecran=7
-mobSpeed=3
 quit=False
 z=0
 q=0
 s=0
 d=0
 mobSpawnZone=[[3],[2,4],[1,3,5]]
+charSpeed=8
+charTimer=0
+mobSpeed=30
 whipping=0
 whipTimer=0
+whipSpeed=150
 X=1
 Y=0
 
@@ -401,20 +404,23 @@ def keyrelease(event):
 
 #Dessin du canevas de jeu
 def draw(canevas):
-    global matrice,charPos,charVel,mobPos,mobVel,mobTimer,look,gameInProgress,doorReached,charKilled
+    global matrice,charPos,charVel,charTimer,mobPos,mobVel,mobTimer,look,gameInProgress,doorReached,charKilled
     # si le personnage est sur la porte
     if matrice[charPos[Y]+charVel[Y]][charPos[X]+charVel[X]]==2:
         gameInProgress=0
         doorReached=1
     else:
         #Si la nouvelle position du personnage est un bloc de sol
-        if isBlockOnFloor(charPos[X]+charVel[X],charPos[Y]+charVel[Y]):
+        if isBlockOnFloor(charPos[X]+charVel[X],charPos[Y]+charVel[Y]) and charTimer>=charSpeed:
+            charTimer=0
             #On le deplace dans la matrice
             matrice[charPos[Y]][charPos[X]]=1
             #On informe la variable "CharPos" de sa nouvelle position
             charPos[X]+=charVel[X]
             charPos[Y]+=charVel[Y]
             #La variable look informe le regard du personnage en fonction de son dernier deplacement
+        else:
+            charTimer+=1
         if charVel[Y]==1:
             look=3
         elif charVel[X]==-1:
@@ -471,7 +477,7 @@ def whipManagement(charPos,look):
                     matrice[yposition][xposition]=look+12
                     endedwhip=1
         whipTimer+=1
-        if whipTimer>=10:
+        if whipTimer>=whipSpeed:
             whipping=0
             whipTimer=0
             for j in range(height):
@@ -591,7 +597,6 @@ def runGame():
     doorReached=False
     charKilled=False
     while(gameInProgress):
-        canevas.after(75)
         canevas.update()
         canevas.delete(ALL)
         draw(canevas)
