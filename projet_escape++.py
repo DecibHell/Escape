@@ -157,7 +157,58 @@ def creerLabyrinthe(width,height,nbMonsters):
         mobVel.append([0,0])
         possible=[]
     deadMob=[0 for loop in range(nbMonsters)]
+    seen=[0 for loop in range(nbMonsters)]
     return matrice
+
+def mobManagement(mobID):
+    global mobVel,mobPos,matrice,mobLook,compteurMob,seen
+    if seen[mobID]==0:
+        alea=random.randint(1,4)
+        if alea==1:
+            mobVel[mobID]=[0,1]
+        elif alea==2:
+            mobVel[mobID]=[0,-1]
+        elif alea==3:
+            mobVel[mobID]=[1,0]
+        elif alea==4:
+            mobVel[mobID]=[-1,0]
+        if matrice[mobPos[mobID][Y]+mobVel[mobID][Y]][mobPos[mobID][X]+mobVel[mobID][X]]!=1:
+            mobVel[mobID]=[0,0]
+    else:
+        xDiff=charPos[X]-mobPos[mobID][X]
+        yDiff=charPos[Y]-mobPos[mobID][Y]
+        if abs(xDiff)>abs(yDiff):
+            mobVel[mobID]=[0,xDiff/abs(xDiff)]
+        else:
+            mobVel[mobID]=[yDiff/abs(yDiff),0]
+
+    if compteurMob[mobID]>=mobSpeed:
+        compteurMob[mobID]=1
+        if mobLook[mobID]<11:
+            matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=1
+        else :
+            matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=0
+        mobPos[mobID][X]+=mobVel[mobID][X]
+        mobPos[mobID][Y]+=mobVel[mobID][Y]
+        if mobVel[mobID][Y]==1:
+            mobLook[mobID]=7
+        elif mobVel[mobID][X]==-1:
+            mobLook[mobID]=8
+        elif mobVel[mobID][X]==1:
+            mobLook[mobID]=9
+        elif mobVel[mobID][Y]==-1:
+            mobLook[mobID]=10
+        if matrice[mobPos[mobID][Y]][mobPos[mobID][X]]==0:
+            mobLook[mobID]+=20
+        matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=mobLook[mobID]
+    else:
+        compteurMob[mobID]+=1
+
+    if charPos[Y]-5<=mobPos[mobID][Y] and charPos[Y]+5>=mobPos[mobID][Y] and charPos[X]-5<=mobPos[mobID][X] and charPos[X]+5>=mobPos[mobID][X]:
+        seen[mobID]=1
+
+
+
 
 
 #Si une touche est enfoncée
@@ -264,60 +315,16 @@ def draw(canevas):
             matrice[charPos[Y]][charPos[X]]=look    #On place le personnage a sa nouvelle position dans la matrice
 
 
-        for loop in range(nbMonsters):
-
-            if seen[loop]==0:
-                alea=random.randint(1,4)
-                if alea==1:
-                    mobVel[loop]=[0,1]
-                elif alea==2:
-                    mobVel[loop]=[0,-1]
-                elif alea==3:
-                    mobVel[loop]=[1,0]
-                elif alea==4:
-                    mobVel[loop]=[-1,0]
-                if matrice[mobPos[loop][Y]+mobVel[loop][Y]][mobPos[loop][X]+mobVel[loop][X]]!=1:
-                    mobVel[loop]=[0,0]
-            else:
-                xDiff=charPos[X]-mobPos[loop][X]
-                yDiff=charPos[Y]-mobPos[loop][Y]
-                if abs(xDiff)>abs(yDiff):
-                    mobVel[loop]=[0,xDiff/abs(xDiff)]
-                else:
-                    mobVel[loop]=[yDiff/abs(yDiff),0]
-
-            if compteurMob[loop]>=mobSpeed:
-                compteurMob[loop]=1
-                if mobLook[loop]<11:
-                    matrice[mobPos[loop][Y]][mobPos[loop][X]]=1
-                else :
-                    matrice[mobPos[loop][Y]][mobPos[loop][X]]=0
-                mobPos[loop][X]+=mobVel[loop][X]
-                mobPos[loop][Y]+=mobVel[loop][Y]
-                if mobVel[loop][Y]==1:
-                    mobLook[loop]=7
-                elif mobVel[loop][X]==-1:
-                    mobLook[loop]=8
-                elif mobVel[loop][X]==1:
-                    mobLook[loop]=9
-                elif mobVel[loop][Y]==-1:
-                    mobLook[loop]=10
-                if matrice[mobPos[loop][Y]][mobPos[loop][X]]==0:
-                    mobLook[loop]+=20
-                matrice[mobPos[loop][Y]][mobPos[loop][X]]=mobLook[loop]
-            else:
-                compteurMob[loop]+=1
-
-            if charPos[Y]-5<=mobPos[loop][Y] and charPos[Y]+5>=mobPos[loop][Y] and charPos[X]-5<=mobPos[loop][X] and charPos[X]+5>=mobPos[loop][X]:
-                seen[loop]=1
-
-            if mobPos[loop][Y]==charPos[Y] and mobPos[loop][X]==charPos[X]:
+        for mobID in range(nbMonsters):
+            mobManagement(mobID)
+            if mobPos[mobID][Y]==charPos[Y] and mobPos[mobID][X]==charPos[X]:
                 canevas.delete(ALL)
                 canevas.create_rectangle(0,0,480,480,fill="black")
                 canevas.create_text(235,235,text="GAME OVER",fill="red", font=50)
                 canevas.update()
                 canevas.after(3000)
                 matrice=creerLabyrinthe(width,height,nbMonsters)
+
 
 ##        if whipping==1:
 ##            whipping=2
