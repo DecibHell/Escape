@@ -7,8 +7,16 @@ pygame.mixer.init()
 pygame.mixer.music.load("Soundtrack.ogg")
 pygame.mixer.music.set_volume(0.7)
 pygame.mixer.music.play(-1)
+
+#Sortie du programme
+def exitApplication():
+    fenetre.destroy()
+    pygame.mixer.music.stop()
+
 #Creation fenetre
 fenetre = Tk()
+fenetre.protocol("WM_DELETE_WINDOW", exitApplication)
+fenetre.geometry("%dx%d%+d%+d" % (480,480,(fenetre.winfo_screenwidth()-480)//2,(fenetre.winfo_screenheight()-480)//2))
 
 #Creation d'un canevas
 
@@ -338,8 +346,7 @@ def keydown(event):
         whipping=1
         charVel=[0,0]
     elif key=="Escape":
-        fenetre.destroy()
-        pygame.mixer.music.stop()
+        exitApplication()
 
 #Si une touche est relachée
 def keyrelease(event):
@@ -563,7 +570,6 @@ def initialscreen():
     button2.place(x=6*32,y=6*32)
     button3=Button(fenetre, text="Hard", command=hardgame,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
     button3.place(x=6*32,y=8*32)
-    fenetre.geometry("%dx%d%+d%+d" % (480,480,(fenetre.winfo_screenwidth()-480)//2,(fenetre.winfo_screenheight()-480)//2))
     fenetre.mainloop()
 
 def easygame():
