@@ -318,24 +318,25 @@ def displayBlock(canevas,x,i2,j2):
 def keydown(event):
     key=event.keysym
     global charVel,z,q,s,d,quit,whipping
-    if key=="Up":
+    if key=="Up" and whipping==0:
         charVel[X]=0                #Si le personnage se deplace horizontalement, alors il perd sa vitesse selon l'axe x
         charVel[Y]=-1               #Quand on appuye sur "z" le personnage se dirige vers le haut
         z=1                         #la variable "z" permet de se souvenir qu'on a appuyé sur "z"
-    elif key=="Left":
+    elif key=="Left" and whipping==0:
         charVel[X]=-1
         charVel[Y]=0
         q=1
-    elif key=="Down":
+    elif key=="Down" and whipping==0:
         charVel[X]=0
         charVel[Y]=1
         s=1
-    elif key=="Right":
+    elif key=="Right" and whipping==0:
         charVel[X]=1
         charVel[Y]=0
         d=1
     elif key=="space":
         whipping=1
+        charVel=[0,0]
     elif key=="Escape":
         fenetre.destroy()
         pygame.mixer.music.stop()
