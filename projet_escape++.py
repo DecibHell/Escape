@@ -21,9 +21,9 @@ q=0
 s=0
 d=0
 mobSpawnZone=[[3],[2,4],[1,3,5]]
-whipping=0
-endedwhip=0
-whiptimer=0
+##whipping=0
+whipping=1 # TODO pour debug
+##whiptimer=0
 X=1
 Y=0
 
@@ -60,7 +60,7 @@ loadSprites()
 
 #Génération d'une matrice labyrinthique de dimensions widthxheight
 def creerLabyrinthe(width,height,nbMonsters):
-    global charPos,charVel,mobPos,mobVel,deadMob,seen,mobLook,compteurMob
+    global charPos,charVel,look,mobPos,mobVel,deadMob,seen,mobLook,compteurMob
     #matrice remplie de 0
     matrice2=[[0]*(width/2) for i in range(height/2)]
     matrice=[[0]*width for i in range(height)]
@@ -139,6 +139,7 @@ def creerLabyrinthe(width,height,nbMonsters):
     matrice[height-3][2]=3
     charPos=[height-3,2]
     charVel=[0,0]
+    look=3
     #Apparition des monstres
     possible=[]
     mobPos=[]
@@ -371,7 +372,7 @@ def keyrelease(event):
 
 #Dessin du canevas de jeu
 def draw(canevas):
-    global matrice,charPos,charVel,mobPos,mobVel,compteurMob
+    global matrice,charPos,charVel,mobPos,mobVel,compteurMob,look
     # si le personnage est sur la porte
     if matrice[charPos[Y]+charVel[Y]][charPos[X]+charVel[X]]==2:
         # creer ecran de fin
@@ -401,7 +402,7 @@ def draw(canevas):
                 look=6
             matrice[charPos[Y]][charPos[X]]=look    #On place le personnage a sa nouvelle position dans la matrice
 
-
+        # gestion des monstres
         for mobID in range(nbMonsters):
             mobManagement(mobID)
             if mobPos[mobID][Y]==charPos[Y] and mobPos[mobID][X]==charPos[X]:
@@ -412,101 +413,66 @@ def draw(canevas):
                 canevas.after(3000)
                 matrice=creerLabyrinthe(width,height,nbMonsters)
 
-<<<<<<< HEAD
-        if whipping==1:
-            for loop in range(3):
-                if look==3:
-                    xposition=charPos[Y]+(loop+1)
-                    yposition=charPos[X]
-                    xposition2=charPos[Y]+(loop+2)
-                    yposition2=charPos[X]
-                if look==4:
-                    xposition=charPos[Y]
-                    yposition=charPos[X]-(loop+1)
-                    xposition2=charPos[Y]
-                    yposition2=charPos[X]-(loop+2)
-                if look==5:
-                    xposition=charPos[Y]
-                    yposition=charPos[X]+(loop+1)
-                    xposition2=charPos[Y]
-                    yposition2=charPos[X]+(loop+2)
-                if look==6:
-                    xposition=charPos[Y]-(loop+1)
-                    yposition=charPos[X]
-                    xposition2=charPos[Y]-(loop+2)
-                    yposition2=charPos[X]
-
-                if matrice[xposition][yposition]==0 and endedwhip==0:
-                    endedwhip=1
-                elif endedwhip==0:
-                    matrice[charPos[Y]][charPos[X]]=look+20
-                    if matrice[xposition][yposition]==7 or matrice[xposition][yposition]==8 or matrice[xposition][yposition]==9 or matrice[xposition][yposition]==10:
-                        for loop2 in range(nbMonsters):
-                            if mobPos==[xposition,yposition]:
-                                deadMob[loop2]=1
-                    if (matrice[xposition2][yposition2]==1 or matrice[xposition2][yposition2]==7 or matrice[xposition2][yposition2]==8 or matrice[xposition2][yposition2]==9 or matrice[xposition2][yposition2]==10) and loop<2:
-                        matrice[xposition][yposition]=look+8
-                    else:
-                        matrice[xposition][yposition]=look+12
-                        endedwhip=1
-                whiptimer+=1
-            if whiptimer>=27:
-                whipping=0
-                for j in range(height):
-                    for i in range(width):
-                        if matrice[j][i]>=11 and matrice[j][i]<=18:
-                            matrice[j][i]=1
-=======
-
-##        if whipping==1:
-##            whipping=2
-##            for loop in range(3):
-##                if look==3:
-##                    xposition=charPos[Y]+(loop+1)
-##                    yposition=charPos[X]
-##                    xposition2=charPos[Y]+(loop+2)
-##                    yposition2=charPos[X]
-##                if look==4:
-##                    xposition=charPos[Y]
-##                    yposition=charPos[X]-(loop+1)
-##                    xposition2=charPos[Y]
-##                    yposition2=charPos[X]-(loop+2)
-##                if look==5:
-##                    xposition=charPos[Y]
-##                    yposition=charPos[X]+(loop+1)
-##                    xposition2=charPos[Y]
-##                    yposition2=charPos[X]+(loop+2)
-##                if look==6:
-##                    xposition=charPos[Y]-(loop+1)
-##                    yposition=charPos[X]
-##                    xposition2=charPos[Y]-(loop+2)
-##                    yposition2=charPos[X]
-##
-##                if matrice[xposition][yposition]==0 and endedwhip==0:
-##                    endedwhip=1
-##                elif endedwhip==0:
-##                    matrice[charPos[Y]][charPos[X]]=look+20
-##                    if matrice[xposition][yposition]==7 or matrice[xposition][yposition]==8 or matrice[xposition][yposition]==9 or matrice[xposition][yposition]==10:
-##                        for loop2 in range(nbMonsters):
-##                            if mobPos==[xposition,yposition]:
-##                                deadMob[loop2]=1
-##                    if (matrice[xposition2][yposition2]==1 or matrice[xposition2][yposition2]==7 or matrice[xposition2][yposition2]==8 or matrice[xposition2][yposition2]==9 or matrice[xposition2][yposition2]==10) and loop<2:
-##                        matrice[xposition][yposition]=look+8
-##                    else:
-##                        matrice[xposition][yposition]=look+12
-##                        endedwhip=1
-##                whiptimer+=1
-##            if whiptimer>=27:
-##                whipping=0
-##                for j in range(height):
-##                    for i in range(width):
-##                        if matrice[j][i]>=11 and matrice[j][i]<=18:
-##                            matrice[j][i]=1
->>>>>>> master
+        # gestion du fouet
+        whipManagement(charPos,look)
 
         displayScreen(canevas,matrice,charPos)
 
+def whipManagement(charPos,look):
+    global matrice
+    endedwhip=0
+    if whipping==1:
+        if look==3:
+            dx=0
+            dy=1
+        elif look==4:
+            dx=-1
+            dy=0
+        elif look==5:
+            dx=1
+            dy=0
+        else:       # elif look==6:
+            dx=0
+            dy=-1
+        for loop in range(3):
+            xposition=charPos[X]+dx*(loop+1)
+            yposition=charPos[Y]+dy*(loop+1)
+            xposition2=xposition+dx
+            yposition2=yposition+dy
 
+            if not isBlockOnFloor(xposition,yposition) and endedwhip==0:
+                endedwhip=1
+            elif endedwhip==0:
+                matrice[charPos[Y]][charPos[X]]=look+20
+                # TODO : Est ce que le mob est mort ?
+##                if matrice[xposition][yposition]==7 or matrice[xposition][yposition]==8 or matrice[xposition][yposition]==9 or matrice[xposition][yposition]==10:
+##                    for loop2 in range(nbMonsters):
+##                        if mobPos==[xposition,yposition]:
+##                            deadMob[loop2]=1
+                if (isBlockOnFloor(xposition2,yposition2)) and loop<2:
+                    matrice[xposition][yposition]=look+8
+                else:
+                    matrice[xposition][yposition]=look+12
+                    endedwhip=1
+##            whiptimer+=1
+##        if whiptimer>=27:
+##            whipping=0
+##            for j in range(height):
+##                for i in range(width):
+##                    if matrice[j][i]>=11 and matrice[j][i]<=18:
+##                        matrice[j][i]=1
+
+# Renvoie TRUE si le block est un sol (même avec un objet/personnage dessus).
+# Renvoie FALSE si on est en dehors de la matrice
+def isBlockOnFloor(x,y):
+    if x<0 or x>=width:
+        return False
+    if y<0 or y>=height:
+        return False
+    if matrice[x][y]!=0 and matrice[x][y]!=2 and matrice[x][y]<27:
+        return True
+    else:
+        return False
 
 def initialscreen():
     label1=Label(fenetre,image=SG.title,bd=-2)
