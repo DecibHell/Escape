@@ -1,6 +1,7 @@
 ﻿from Tkinter import *
 import random
 import pygame
+import time
 from SprManaging import *
 
 pygame.mixer.init()
@@ -12,6 +13,10 @@ pygame.mixer.music.play(-1)
 def exitApplication():
     fenetre.destroy()
     pygame.mixer.music.stop()
+
+# Renvoie l'heure en millisecondes
+def getTime():
+    return int(round(time.time() * 1000))
 
 #Creation fenetre
 fenetre = Tk()
@@ -28,12 +33,13 @@ q=0
 s=0
 d=0
 mobSpawnZone=[[3],[2,4],[1,3,5]]
-charSpeed=8
+charSpeed=75
 charTimer=0
-mobSpeed=30
+mobSpeed=200
 whipping=0
 whipTimer=0
-whipSpeed=150
+whipCooldown=1000
+whipSpeed=500
 X=1
 Y=0
 
@@ -211,8 +217,8 @@ def mobManagement(mobID):
                     mobVel[mobID][X]=abs(mobVelCopy[mobID][Y])*xDiff/abs(xDiff)
                     mobVel[mobID][Y]=abs(mobVelCopy[mobID][X])*yDiff/abs(yDiff)
 
-        if mobTimer[mobID]>=mobSpeed and isBlockFlyable(mobPos[mobID][X]+mobVel[mobID][X],mobPos[mobID][Y]+mobVel[mobID][Y]):
-            mobTimer[mobID]=1
+        if getTime()>=mobTimer[mobID]+mobSpeed and isBlockFlyable(mobPos[mobID][X]+mobVel[mobID][X],mobPos[mobID][Y]+mobVel[mobID][Y]):
+            mobTimer[mobID]=getTime()
             if mobLook[mobID]<11:
                 matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=1
             else :
@@ -230,8 +236,6 @@ def mobManagement(mobID):
             if matrice[mobPos[mobID][Y]][mobPos[mobID][X]]==0:
                 mobLook[mobID]+=20
             matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=mobLook[mobID]
-        else:
-            mobTimer[mobID]+=1
 
         if charPos[Y]-5<=mobPos[mobID][Y] and charPos[Y]+5>=mobPos[mobID][Y] and charPos[X]-5<=mobPos[mobID][X] and charPos[X]+5>=mobPos[mobID][X]:
             seen[mobID]=1
@@ -326,12 +330,17 @@ def displayBlock(canevas,x,i2,j2):
     elif x==30 :
         canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobUW) #Monstre vers le haut au-dessus d'un mur
 
-
+def doWhip():
+    global whipTimer,whipping,charVel
+    if getTime()>=whipCooldown+whipTimer:
+        whipping=1
+        charVel=[0,0]
+        whipTimer=getTime()
 
 #Si une touche est enfoncée
 def keydown(event):
     key=event.keysym
-    global charVel,z,q,s,d,whipping,gameInProgress,gamePaused
+    global charVel,z,q,s,d,whipping,whipTimer,gameInProgress,gamePaused
     if key=="Up" and whipping==0:
         charVel[X]=0                #Si le personnage se deplace horizontalement, alors il perd sa vitesse selon l'axe x
         charVel[Y]=-1               #Quand on appuye sur "z" le personnage se dirige vers le haut
@@ -349,8 +358,7 @@ def keydown(event):
         charVel[Y]=0
         d=1
     elif key=="space":
-        whipping=1
-        charVel=[0,0]
+        doWhip()
     elif key=="Escape":
         gameInProgress=False
         gamePaused=True
@@ -411,16 +419,14 @@ def draw(canevas):
         doorReached=1
     else:
         #Si la nouvelle position du personnage est un bloc de sol
-        if isBlockOnFloor(charPos[X]+charVel[X],charPos[Y]+charVel[Y]) and charTimer>=charSpeed:
-            charTimer=0
+        if isBlockOnFloor(charPos[X]+charVel[X],charPos[Y]+charVel[Y]) and getTime()>=charTimer+charSpeed:
+            charTimer=getTime()
             #On le deplace dans la matrice
             matrice[charPos[Y]][charPos[X]]=1
             #On informe la variable "CharPos" de sa nouvelle position
             charPos[X]+=charVel[X]
             charPos[Y]+=charVel[Y]
             #La variable look informe le regard du personnage en fonction de son dernier deplacement
-        else:
-            charTimer+=1
         if charVel[Y]==1:
             look=3
         elif charVel[X]==-1:
@@ -476,10 +482,9 @@ def whipManagement(charPos,look):
                 else:
                     matrice[yposition][xposition]=look+12
                     endedwhip=1
-        whipTimer+=1
-        if whipTimer>=whipSpeed:
+        if getTime()>=whipTimer+whipSpeed:
             whipping=0
-            whipTimer=0
+            whipTimer=getTime()
             for j in range(height):
                 for i in range(width):
                     if matrice[j][i]>=11 and matrice[j][i]<=18:
@@ -597,6 +602,7 @@ def runGame():
     doorReached=False
     charKilled=False
     while(gameInProgress):
+        canevas.after(1)
         canevas.update()
         canevas.delete(ALL)
         draw(canevas)
@@ -608,6 +614,8 @@ def runGame():
         displayDeathScreen()
 
 def displayPauseMenu():
+    label1=Label(fenetre,image=SG.pause,bd=-2)
+    label1.place(x=161,y=97)
     button1=Button(fenetre, text="Resume" ,command=runGame ,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
     button1.place(x=6*32,y=4*32)
     button2=Button(fenetre, text="New Game", command=displayMainMenu,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
@@ -626,8 +634,8 @@ def displayVictoryScreen():
 def displayDeathScreen():
     canevas.delete(ALL)
     canevas.create_image(240,240,image=SG.textsheet)
-    canevas.create_text(235,225,text="The demon devoured your flesh",fill="Black", font=1500)
-    canevas.create_text(235,245,text="and your soul is now wandering in the limbos...",fill="Black", font=1500)
+    canevas.create_text(240,225,text="The demon devoured your flesh",fill="Black", font=1500)
+    canevas.create_text(240,245,text="and your soul is now wandering in the limbos...",fill="Black", font=1500)
     canevas.update()
     canevas.after(5000)
     displayMainMenu()

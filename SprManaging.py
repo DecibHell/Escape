@@ -4,6 +4,7 @@ from PIL import Image , ImageTk
 class SG:
     title=None
     textsheet=None
+    pause=None
     charD=None
     charL=None
     charU=None
@@ -53,6 +54,8 @@ def loadSprites():
     background=Image.open(r"Background.jpg")
     SG.textsheet=Image.open(r"TextSheet.jpg")
     SG.textsheet = ImageTk.PhotoImage(SG.textsheet)
+    SG.pause=Image.open(r"Pause.jpg")
+    SG.pause = ImageTk.PhotoImage(SG.pause)
     #Decoupage de l'image en petites images, avec SG.charD pour SG.character down, soit le personnage vers le bas, etc
     SG.charD = cutSprite(sprites,0,32,32,32)
     SG.charL = cutSprite(sprites,32,32,32,32)
