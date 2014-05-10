@@ -325,7 +325,7 @@ def displayBlock(canevas,x,i2,j2):
 #Si une touche est enfoncée
 def keydown(event):
     key=event.keysym
-    global charVel,z,q,s,d,quit,whipping
+    global charVel,z,q,s,d,whipping,gameInProgress,gamePaused
     if key=="Up" and whipping==0:
         charVel[X]=0                #Si le personnage se deplace horizontalement, alors il perd sa vitesse selon l'axe x
         charVel[Y]=-1               #Quand on appuye sur "z" le personnage se dirige vers le haut
@@ -346,7 +346,8 @@ def keydown(event):
         whipping=1
         charVel=[0,0]
     elif key=="Escape":
-        exitApplication()
+        gameInProgress=False
+        gamePaused=True
 
 #Si une touche est relachée
 def keyrelease(event):
@@ -471,12 +472,6 @@ def whipManagement(charPos,look):
                 endedwhip=1
             elif endedwhip==0:
                 matrice[charPos[Y]][charPos[X]]=look+20
-##                if isBlockMobOnFloor(xposition,yposition):  # #
-##                    print "Mob détecté"
-##                    for loop2 in range(nbMonsters):         # #
-##                        if mobPos==[yposition,xposition]:   # #
-##                            print "Mob Tué"
-##                            deadMob[loop2]=1                # #
                 if (isBlockOnFloor(xposition2,yposition2)) and loop<2:
                     matrice[yposition][xposition]=look+8
                 else:
@@ -551,7 +546,14 @@ def isBlockFlyable(x,y):
     else:
         return False
 
-def initialscreen():
+#Vide la fenetre, sauf le widget passé en paramètre
+def emptyMainWindow(survivor=None):
+    for child in fenetre.winfo_children():
+        if child!=survivor:
+            child.destroy()
+
+def displayMainMenu():
+    emptyMainWindow()
     label1=Label(fenetre,image=SG.title,bd=-2)
     label1.place(x=0,y=0)
     label2=Label(fenetre,image=SG.border,bd=-2)
@@ -564,50 +566,62 @@ def initialscreen():
     label5.place(x=6*32,y=7*32)
     label6=Label(fenetre,image=SG.bottom,bd=-2)
     label6.place(x=6*32,y=9*32)
-    button1=Button(fenetre, text="Easy" ,command=easygame ,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0,height=32,width=96)
+    button1=Button(fenetre, text="Easy" ,command=setEasyGame ,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
     button1.place(x=6*32,y=4*32)
-    button2=Button(fenetre, text="Medium", command=mediumgame,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button2=Button(fenetre, text="Medium", command=setMediumGame,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
     button2.place(x=6*32,y=6*32)
-    button3=Button(fenetre, text="Hard", command=hardgame,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button3=Button(fenetre, text="Hard", command=setHardGame,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
     button3.place(x=6*32,y=8*32)
-    fenetre.mainloop()
 
-def easygame():
-    buttonpress(1)
-def mediumgame():
-    buttonpress(2)
-def hardgame():
-    buttonpress(3)
+def setEasyGame():
+    createNewGame(1)
+def setMediumGame():
+    createNewGame(2)
+def setHardGame():
+    createNewGame(3)
 
-def buttonpress(diff):
-    global nbMonsters,height,width
+def createNewGame(diff):
+    global nbMonsters,height,width,matrice,canevas
     nbMonsters=diff
     height=50*diff
     width=50*diff
-    game()
-
-def game():
-    global matrice
     matrice=creerLabyrinthe(width,height,nbMonsters)
     canevas = Canvas(fenetre, width = resolution*(ecart_ecran*2+1)-2, height = resolution*(ecart_ecran*2+1)-2,bg="white")
     canevas.place(x=0,y=0)
-    canevas.pack()
-    while(1==1):
+    runGame()
+
+def runGame():
+    global matrice,gameInProgress,gamePaused,doorReached,charKilled,canevas
+    emptyMainWindow(canevas)
+    gameInProgress=True
+    gamePaused=False
+    doorReached=False
+    charKilled=False
+    while(gameInProgress):
         canevas.after(75)
         canevas.update()
         canevas.delete(ALL)
         draw(canevas)
+    if gamePaused:
+        displayPauseMenu()
+    if doorReached:
+        displayVictoryScreen()
+    if charKilled:
+        displayDeathScreen()
 
+def displayPauseMenu():
+    button1=Button(fenetre, text="Resume" ,command=runGame ,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button1.place(x=6*32,y=4*32)
+    button2=Button(fenetre, text="New Game", command=displayMainMenu,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button2.place(x=6*32,y=6*32)
+    button3=Button(fenetre, text="Quit", command=exitApplication,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button3.place(x=6*32,y=8*32)
 
 #Traitement des entrees clavier
 fenetre.bind_all("<KeyPress>",keydown)
 fenetre.bind_all("<KeyRelease>",keyrelease)
 
 
-initialscreen()
-##width=100
-##height=100
-##nbMonsters=3
-##game()
-
+displayMainMenu()
+fenetre.mainloop()
 
