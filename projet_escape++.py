@@ -15,9 +15,6 @@ fenetre = Tk()
 resolution=32
 ecart_ecran=7
 mobSpeed=3
-compteurMob=[0,0,0]
-mobLook=[7,7,7]
-seen=[0,0,0]
 quit=False
 z=0
 q=0
@@ -63,7 +60,7 @@ loadSprites()
 
 #Génération d'une matrice labyrinthique de dimensions widthxheight
 def creerLabyrinthe(width,height,nbMonsters):
-    global charPos,charVel,mobPos,mobVel,deadMob
+    global charPos,charVel,mobPos,mobVel,deadMob,seen,mobLook,compteurMob
     #matrice remplie de 0
     matrice2=[[0]*(width/2) for i in range(height/2)]
     matrice=[[0]*width for i in range(height)]
@@ -157,7 +154,148 @@ def creerLabyrinthe(width,height,nbMonsters):
         mobVel.append([0,0])
         possible=[]
     deadMob=[0 for loop in range(nbMonsters)]
+    seen=[0 for loop in range(nbMonsters)]
+    mobLook=[7 for loop in range(nbMonsters)]
+    compteurMob=[0 for loop in range(nbMonsters)]
     return matrice
+
+def mobManagement(mobID):
+    global mobVel,mobPos,matrice,mobLook,compteurMob,seen
+    if seen[mobID]==0:
+        alea=random.randint(1,4)
+        if alea==1:
+            mobVel[mobID]=[0,1]
+        elif alea==2:
+            mobVel[mobID]=[0,-1]
+        elif alea==3:
+            mobVel[mobID]=[1,0]
+        elif alea==4:
+            mobVel[mobID]=[-1,0]
+        if matrice[mobPos[mobID][Y]+mobVel[mobID][Y]][mobPos[mobID][X]+mobVel[mobID][X]]!=1:
+            mobVel[mobID]=[0,0]
+    else:
+        xDiff=charPos[X]-mobPos[mobID][X]
+        yDiff=charPos[Y]-mobPos[mobID][Y]
+        if abs(xDiff)>abs(yDiff):
+            mobVel[mobID]=[0,xDiff/abs(xDiff)]
+        else:
+            mobVel[mobID]=[yDiff/abs(yDiff),0]
+
+    if compteurMob[mobID]>=mobSpeed:
+        compteurMob[mobID]=1
+        if mobLook[mobID]<11:
+            matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=1
+        else :
+            matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=0
+        mobPos[mobID][X]+=mobVel[mobID][X]
+        mobPos[mobID][Y]+=mobVel[mobID][Y]
+        if mobVel[mobID][Y]==1:
+            mobLook[mobID]=7
+        elif mobVel[mobID][X]==-1:
+            mobLook[mobID]=8
+        elif mobVel[mobID][X]==1:
+            mobLook[mobID]=9
+        elif mobVel[mobID][Y]==-1:
+            mobLook[mobID]=10
+        if matrice[mobPos[mobID][Y]][mobPos[mobID][X]]==0:
+            mobLook[mobID]+=20
+        matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=mobLook[mobID]
+    else:
+        compteurMob[mobID]+=1
+
+    if charPos[Y]-5<=mobPos[mobID][Y] and charPos[Y]+5>=mobPos[mobID][Y] and charPos[X]-5<=mobPos[mobID][X] and charPos[X]+5>=mobPos[mobID][X]:
+        seen[mobID]=1
+
+def displayScreen(canevas,matrice,charPos):
+    #ecran= zone de la matrice autour du personnage que l'on souhaite afficher
+    ecran = [charPos[X]-ecart_ecran,charPos[X]+ecart_ecran,charPos[Y]-ecart_ecran,charPos[Y]+ecart_ecran] #premierx,dernierx,premier y, et dernier y de l'ecran
+    # recadrage de l'ecran: si le personnage se situe pres d'un bord du labyrinthe alors on deplace l'écran pour ne pas afficher ce qui hors du labyritnhe
+    if ecran[0]<0:
+        ecran[0]=0                           #Par exemple, si le personage se situe en dessous de "ecart_ecran" sur la gauche, alors l'écran ne le suit plus et se cale sur le bord gauche
+        ecran[1]=2*ecart_ecran
+    if ecran[1]>=width:
+        ecran[1]=width-1
+        ecran[0]=width-(2*ecart_ecran)-1
+    if ecran[2]<0:
+        ecran[2]=0
+        ecran[3]=2*ecart_ecran
+    if ecran[3]>=height:
+        ecran[3]=height-1
+        ecran[2]=height-(2*ecart_ecran)-1
+    #recuperation des cases correspondantes dans la matrice pour les afficher
+    for j in range(ecran[2],ecran[3]+1):
+        for i in range(ecran[0],ecran[1]+1):
+            # la variable x prend la valeur de chaque bloc a afficher successivement
+            x=matrice[j][i]
+            # les variables i2 et j2 informent la position relative du bloc cible dans l' "ecran"
+            j2=j-charPos[Y]+ecart_ecran
+            i2=i-charPos[X]+ecart_ecran
+             # ces tests permettent d'eviter les erreurs pour i2 et j2 suite a un recadrage de l'ecran
+            if charPos[Y]<ecart_ecran:
+                j2-=(ecart_ecran-charPos[Y])
+            if charPos[X]<ecart_ecran:
+                i2-=(ecart_ecran-charPos[X])
+            if charPos[Y]>=(height-ecart_ecran):
+                j2-=(height-ecart_ecran-charPos[Y]-1)
+            if charPos[X]>=(width-ecart_ecran):
+                i2-=(width-ecart_ecran-charPos[X]-1)
+            # on cree une image aux coordonnees i2 j2 selon la valeur de x
+            displayBlock(canevas,x,i2,j2)
+
+def displayBlock(canevas,x,i2,j2):
+    if x==1 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.floor) #Sol
+    elif x==0 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.wall) #Mur
+    elif x==2 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.door) #Porte
+    elif x==3 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charD) #Personnage vers le bas
+    elif x==4 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charL) #Personnage vers la gauche
+    elif x==5 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charR) #Personnage vers la droite
+    elif x==6 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charU) #Personnage vers le haut
+    elif x==7 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobD) #Monstre vers le bas
+    elif x==8 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobL) #Monstre vers la gauche
+    elif x==9 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobR) #Monstre vers la droite
+    elif x==10 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobU) #Monstre vers le haut
+    elif x==11 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipD) #Fouet droit vers le bas
+    elif x==12 or x==13:
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipH) #Fouet droit horizontal
+    elif x==14 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipU) #Fouet droit vers le haut
+    elif x==15 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndD) #Fin du fouet vers le bas
+    elif x==16 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndL) #Fin du fouet vers la gauche
+    elif x==17 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndR) #Fin du fouet vers la droite
+    elif x==18 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndU) #Fin du fouet vers le haut
+    elif x==23 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charDW) #Personnage vers le bas fouettant
+    elif x==24 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charLW) #Personnage vers la gauche fouettant
+    elif x==25 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charRW) #Personnage vers la droite fouettant
+    elif x==26 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charUW) #Personnage vers le haut fouettant
+    elif x==27 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobDW) #Monstre vers le bas au-dessus d'un mur
+    elif x==28 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobLW) #Monstre vers la gauche au-dessus d'un mur
+    elif x==29 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobRW) #Monstre vers la droite au-dessus d'un mur
+    elif x==30 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobUW) #Monstre vers le haut au-dessus d'un mur
+
 
 
 #Si une touche est enfoncée
@@ -264,54 +402,9 @@ def draw(canevas):
             matrice[charPos[Y]][charPos[X]]=look    #On place le personnage a sa nouvelle position dans la matrice
 
 
-        for loop in range(nbMonsters):
-
-            if seen[loop]==0:
-                alea=random.randint(1,4)
-                if alea==1:
-                    mobVel[loop]=[0,1]
-                elif alea==2:
-                    mobVel[loop]=[0,-1]
-                elif alea==3:
-                    mobVel[loop]=[1,0]
-                elif alea==4:
-                    mobVel[loop]=[-1,0]
-                if matrice[mobPos[loop][Y]+mobVel[loop][Y]][mobPos[loop][X]+mobVel[loop][X]]!=1:
-                    mobVel[loop]=[0,0]
-            else:
-                xDiff=charPos[X]-mobPos[loop][X]
-                yDiff=charPos[Y]-mobPos[loop][Y]
-                if abs(xDiff)>abs(yDiff):
-                    mobVel[loop]=[0,xDiff/abs(xDiff)]
-                else:
-                    mobVel[loop]=[yDiff/abs(yDiff),0]
-
-            if compteurMob[loop]>=mobSpeed:
-                compteurMob[loop]=1
-                if mobLook[loop]<11:
-                    matrice[mobPos[loop][Y]][mobPos[loop][X]]=1
-                else :
-                    matrice[mobPos[loop][Y]][mobPos[loop][X]]=0
-                mobPos[loop][X]+=mobVel[loop][X]
-                mobPos[loop][Y]+=mobVel[loop][Y]
-                if mobVel[loop][Y]==1:
-                    mobLook[loop]=7
-                elif mobVel[loop][X]==-1:
-                    mobLook[loop]=8
-                elif mobVel[loop][X]==1:
-                    mobLook[loop]=9
-                elif mobVel[loop][Y]==-1:
-                    mobLook[loop]=10
-                if matrice[mobPos[loop][Y]][mobPos[loop][X]]==0:
-                    mobLook[loop]+=20
-                matrice[mobPos[loop][Y]][mobPos[loop][X]]=mobLook[loop]
-            else:
-                compteurMob[loop]+=1
-
-            if charPos[Y]-5<=mobPos[loop][Y] and charPos[Y]+5>=mobPos[loop][Y] and charPos[X]-5<=mobPos[loop][X] and charPos[X]+5>=mobPos[loop][X]:
-                seen[loop]=1
-
-            if mobPos[loop][Y]==charPos[Y] and mobPos[loop][X]==charPos[X]:
+        for mobID in range(nbMonsters):
+            mobManagement(mobID)
+            if mobPos[mobID][Y]==charPos[Y] and mobPos[mobID][X]==charPos[X]:
                 canevas.delete(ALL)
                 canevas.create_rectangle(0,0,480,480,fill="black")
                 canevas.create_text(235,235,text="GAME OVER",fill="red", font=50)
@@ -319,6 +412,7 @@ def draw(canevas):
                 canevas.after(3000)
                 matrice=creerLabyrinthe(width,height,nbMonsters)
 
+<<<<<<< HEAD
         if whipping==1:
             for loop in range(3):
                 if look==3:
@@ -362,94 +456,56 @@ def draw(canevas):
                     for i in range(width):
                         if matrice[j][i]>=11 and matrice[j][i]<=18:
                             matrice[j][i]=1
+=======
 
-        #ecran= zone de la matrice autour du personnage que l'on souhaite afficher
-        ecran = [charPos[X]-ecart_ecran,charPos[X]+ecart_ecran,charPos[Y]-ecart_ecran,charPos[Y]+ecart_ecran] #premierx,dernierx,premier y, et dernier y de l'ecran
-        # recadrage de l'ecran: si le personnage se situe pres d'un bord du labyrinthe alors on deplace l'écran pour ne pas afficher ce qui hors du labyritnhe
-        if ecran[0]<0:
-            ecran[0]=0                           #Par exemple, si le personage se situe en dessous de "ecart_ecran" sur la gauche, alors l'écran ne le suit plus et se cale sur le bord gauche
-            ecran[1]=2*ecart_ecran
-        if ecran[1]>=width:
-            ecran[1]=width-1
-            ecran[0]=width-(2*ecart_ecran)-1
-        if ecran[2]<0:
-            ecran[2]=0
-            ecran[3]=2*ecart_ecran
-        if ecran[3]>=height:
-            ecran[3]=height-1
-            ecran[2]=height-(2*ecart_ecran)-1
-        #recuperation des cases correspondantes dans la matrice pour les afficher
-        for j in range(ecran[2],ecran[3]+1):
-            for i in range(ecran[0],ecran[1]+1):
-                # la vraible x prend la valeur de chaque bloc a afficher successivement
-                x=matrice[j][i]
-                # les variables i2 et j2 informent la position relative du bloc cible dans l' "ecran"
-                j2=j-charPos[Y]+ecart_ecran
-                i2=i-charPos[X]+ecart_ecran
-                 # ces tests permettent d'eviter les erreurs pour i2 et j2 suite a un recadrage de l'ecran
-                if charPos[Y]<ecart_ecran:
-                    j2-=(ecart_ecran-charPos[Y])
-                if charPos[X]<ecart_ecran:
-                    i2-=(ecart_ecran-charPos[X])
-                if charPos[Y]>=(height-ecart_ecran):
-                    j2-=(height-ecart_ecran-charPos[Y]-1)
-                if charPos[X]>=(width-ecart_ecran):
-                    i2-=(width-ecart_ecran-charPos[X]-1)
+##        if whipping==1:
+##            whipping=2
+##            for loop in range(3):
+##                if look==3:
+##                    xposition=charPos[Y]+(loop+1)
+##                    yposition=charPos[X]
+##                    xposition2=charPos[Y]+(loop+2)
+##                    yposition2=charPos[X]
+##                if look==4:
+##                    xposition=charPos[Y]
+##                    yposition=charPos[X]-(loop+1)
+##                    xposition2=charPos[Y]
+##                    yposition2=charPos[X]-(loop+2)
+##                if look==5:
+##                    xposition=charPos[Y]
+##                    yposition=charPos[X]+(loop+1)
+##                    xposition2=charPos[Y]
+##                    yposition2=charPos[X]+(loop+2)
+##                if look==6:
+##                    xposition=charPos[Y]-(loop+1)
+##                    yposition=charPos[X]
+##                    xposition2=charPos[Y]-(loop+2)
+##                    yposition2=charPos[X]
+##
+##                if matrice[xposition][yposition]==0 and endedwhip==0:
+##                    endedwhip=1
+##                elif endedwhip==0:
+##                    matrice[charPos[Y]][charPos[X]]=look+20
+##                    if matrice[xposition][yposition]==7 or matrice[xposition][yposition]==8 or matrice[xposition][yposition]==9 or matrice[xposition][yposition]==10:
+##                        for loop2 in range(nbMonsters):
+##                            if mobPos==[xposition,yposition]:
+##                                deadMob[loop2]=1
+##                    if (matrice[xposition2][yposition2]==1 or matrice[xposition2][yposition2]==7 or matrice[xposition2][yposition2]==8 or matrice[xposition2][yposition2]==9 or matrice[xposition2][yposition2]==10) and loop<2:
+##                        matrice[xposition][yposition]=look+8
+##                    else:
+##                        matrice[xposition][yposition]=look+12
+##                        endedwhip=1
+##                whiptimer+=1
+##            if whiptimer>=27:
+##                whipping=0
+##                for j in range(height):
+##                    for i in range(width):
+##                        if matrice[j][i]>=11 and matrice[j][i]<=18:
+##                            matrice[j][i]=1
+>>>>>>> master
 
+        displayScreen(canevas,matrice,charPos)
 
-                # on cree une image aux coordonnees i2 j2 selon la valeur de x
-                if x==1 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.floor) #Sol
-                elif x==0 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.wall) #Mur
-                elif x==2 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.door) #Porte
-                elif x==3 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charD) #Personnage vers le bas
-                elif x==4 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charL) #Personnage vers la gauche
-                elif x==5 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charR) #Personnage vers la droite
-                elif x==6 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charU) #Personnage vers le haut
-                elif x==7 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobD) #Monstre vers le bas
-                elif x==8 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobL) #Monstre vers la gauche
-                elif x==9 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobR) #Monstre vers la droite
-                elif x==10 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobU) #Monstre vers le haut
-                elif x==11 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipD) #Fouet droit vers le bas
-                elif x==12 or x==13:
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipH) #Fouet droit horizontal
-                elif x==14 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipU) #Fouet droit vers le haut
-                elif x==15 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndD) #Fin du fouet vers le bas
-                elif x==16 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndL) #Fin du fouet vers la gauche
-                elif x==17 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndR) #Fin du fouet vers la droite
-                elif x==18 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndU) #Fin du fouet vers le haut
-                elif x==23 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charDW) #Personnage vers le bas fouettant
-                elif x==24 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charLW) #Personnage vers la gauche fouettant
-                elif x==25 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charRW) #Personnage vers la droite fouettant
-                elif x==26 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charUW) #Personnage vers le haut fouettant
-                elif x==27 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobDW) #Monstre vers le bas au-dessus d'un mur
-                elif x==28 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobLW) #Monstre vers la gauche au-dessus d'un mur
-                elif x==29 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobRW) #Monstre vers la droite au-dessus d'un mur
-                elif x==30 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobUW) #Monstre vers le haut au-dessus d'un mur
 
 
 def initialscreen():
