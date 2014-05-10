@@ -188,8 +188,16 @@ def mobManagement(mobID):
                 mobVel[mobID]=[0,xDiff/abs(xDiff)]
             elif yDiff!=0:
                 mobVel[mobID]=[yDiff/abs(yDiff),0]
+            if not isBlockFlyable(mobPos[mobID][X]+mobVel[mobID][X],mobPos[mobID][Y]+mobVel[mobID][Y]):
+                mobVelCopy=mobVel
+                if xDiff==0 or yDiff==0:
+                    mobVel[mobID][X]=mobVelCopy[mobID][Y]
+                    mobVel[mobID][Y]=mobVelCopy[mobID][X]
+                else:
+                    mobVel[mobID][X]=abs(mobVelCopy[mobID][Y])*xDiff/abs(xDiff)
+                    mobVel[mobID][Y]=abs(mobVelCopy[mobID][X])*yDiff/abs(yDiff)
 
-        if compteurMob[mobID]>=mobSpeed:
+        if compteurMob[mobID]>=mobSpeed and isBlockFlyable(mobPos[mobID][X]+mobVel[mobID][X],mobPos[mobID][Y]+mobVel[mobID][Y]):
             compteurMob[mobID]=1
             if mobLook[mobID]<11:
                 matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=1
@@ -377,6 +385,8 @@ def keyrelease(event):
         if q==1:
             charVel[X]=-1
 
+
+
 #Dessin du canevas de jeu
 def draw(canevas):
     global matrice,charPos,charVel,mobPos,mobVel,compteurMob,look
@@ -422,8 +432,10 @@ def draw(canevas):
 
         # gestion du fouet
         whipManagement(charPos,look)
-
+        #Affichage
         displayScreen(canevas,matrice,charPos)
+
+
 
 def whipManagement(charPos,look):
     global matrice,whiptimer,whipping,deadMob
@@ -515,6 +527,18 @@ def isBlockEmpty(x,y):
     if y<0 or y>=height:
         return False
     if matrice[y][x]==1:
+        return True
+    else:
+        return False
+
+# Renvoie TRUE si le block est un sol vide, un sol avec un joueur ou un mur
+# Renvoie FALSE si on est en dehors de la matrice
+def isBlockFlyable(x,y):
+    if x<0 or x>=width:
+        return False
+    if y<0 or y>=height:
+        return False
+    if matrice[y][x]==1 or matrice[y][x]==0 or (matrice[y][x]>=3 and matrice[y][x]<=6) or (matrice[y][x]>=23 and matrice[y][x]<=26):
         return True
     else:
         return False
