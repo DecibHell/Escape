@@ -476,7 +476,7 @@ def whipManagement(charPos,look):
                     matrice[yposition][xposition]=look+12
                     endedwhip=1
         whiptimer+=1
-        if whiptimer>=20:
+        if whiptimer>=10:
             whipping=0
             whiptimer=0
             for j in range(height):
