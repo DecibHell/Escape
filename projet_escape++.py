@@ -15,9 +15,6 @@ fenetre = Tk()
 resolution=32
 ecart_ecran=7
 mobSpeed=3
-compteurMob=[0,0,0]
-mobLook=[7,7,7]
-seen=[0,0,0]
 quit=False
 z=0
 q=0
@@ -63,7 +60,7 @@ loadSprites()
 
 #Génération d'une matrice labyrinthique de dimensions widthxheight
 def creerLabyrinthe(width,height,nbMonsters):
-    global charPos,charVel,mobPos,mobVel,deadMob
+    global charPos,charVel,mobPos,mobVel,deadMob,seen,mobLook,compteurMob
     #matrice remplie de 0
     matrice2=[[0]*(width/2) for i in range(height/2)]
     matrice=[[0]*width for i in range(height)]
@@ -158,6 +155,8 @@ def creerLabyrinthe(width,height,nbMonsters):
         possible=[]
     deadMob=[0 for loop in range(nbMonsters)]
     seen=[0 for loop in range(nbMonsters)]
+    mobLook=[7 for loop in range(nbMonsters)]
+    compteurMob=[0 for loop in range(nbMonsters)]
     return matrice
 
 def mobManagement(mobID):
@@ -207,7 +206,95 @@ def mobManagement(mobID):
     if charPos[Y]-5<=mobPos[mobID][Y] and charPos[Y]+5>=mobPos[mobID][Y] and charPos[X]-5<=mobPos[mobID][X] and charPos[X]+5>=mobPos[mobID][X]:
         seen[mobID]=1
 
+def displayScreen(canevas,matrice,charPos):
+    #ecran= zone de la matrice autour du personnage que l'on souhaite afficher
+    ecran = [charPos[X]-ecart_ecran,charPos[X]+ecart_ecran,charPos[Y]-ecart_ecran,charPos[Y]+ecart_ecran] #premierx,dernierx,premier y, et dernier y de l'ecran
+    # recadrage de l'ecran: si le personnage se situe pres d'un bord du labyrinthe alors on deplace l'écran pour ne pas afficher ce qui hors du labyritnhe
+    if ecran[0]<0:
+        ecran[0]=0                           #Par exemple, si le personage se situe en dessous de "ecart_ecran" sur la gauche, alors l'écran ne le suit plus et se cale sur le bord gauche
+        ecran[1]=2*ecart_ecran
+    if ecran[1]>=width:
+        ecran[1]=width-1
+        ecran[0]=width-(2*ecart_ecran)-1
+    if ecran[2]<0:
+        ecran[2]=0
+        ecran[3]=2*ecart_ecran
+    if ecran[3]>=height:
+        ecran[3]=height-1
+        ecran[2]=height-(2*ecart_ecran)-1
+    #recuperation des cases correspondantes dans la matrice pour les afficher
+    for j in range(ecran[2],ecran[3]+1):
+        for i in range(ecran[0],ecran[1]+1):
+            # la variable x prend la valeur de chaque bloc a afficher successivement
+            x=matrice[j][i]
+            # les variables i2 et j2 informent la position relative du bloc cible dans l' "ecran"
+            j2=j-charPos[Y]+ecart_ecran
+            i2=i-charPos[X]+ecart_ecran
+             # ces tests permettent d'eviter les erreurs pour i2 et j2 suite a un recadrage de l'ecran
+            if charPos[Y]<ecart_ecran:
+                j2-=(ecart_ecran-charPos[Y])
+            if charPos[X]<ecart_ecran:
+                i2-=(ecart_ecran-charPos[X])
+            if charPos[Y]>=(height-ecart_ecran):
+                j2-=(height-ecart_ecran-charPos[Y]-1)
+            if charPos[X]>=(width-ecart_ecran):
+                i2-=(width-ecart_ecran-charPos[X]-1)
+            # on cree une image aux coordonnees i2 j2 selon la valeur de x
+            displayBlock(canevas,x,i2,j2)
 
+def displayBlock(canevas,x,i2,j2):
+    if x==1 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.floor) #Sol
+    elif x==0 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.wall) #Mur
+    elif x==2 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.door) #Porte
+    elif x==3 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charD) #Personnage vers le bas
+    elif x==4 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charL) #Personnage vers la gauche
+    elif x==5 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charR) #Personnage vers la droite
+    elif x==6 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charU) #Personnage vers le haut
+    elif x==7 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobD) #Monstre vers le bas
+    elif x==8 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobL) #Monstre vers la gauche
+    elif x==9 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobR) #Monstre vers la droite
+    elif x==10 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobU) #Monstre vers le haut
+    elif x==11 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipD) #Fouet droit vers le bas
+    elif x==12 or x==13:
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipH) #Fouet droit horizontal
+    elif x==14 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipU) #Fouet droit vers le haut
+    elif x==15 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndD) #Fin du fouet vers le bas
+    elif x==16 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndL) #Fin du fouet vers la gauche
+    elif x==17 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndR) #Fin du fouet vers la droite
+    elif x==18 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndU) #Fin du fouet vers le haut
+    elif x==23 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charDW) #Personnage vers le bas fouettant
+    elif x==24 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charLW) #Personnage vers la gauche fouettant
+    elif x==25 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charRW) #Personnage vers la droite fouettant
+    elif x==26 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charUW) #Personnage vers le haut fouettant
+    elif x==27 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobDW) #Monstre vers le bas au-dessus d'un mur
+    elif x==28 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobLW) #Monstre vers la gauche au-dessus d'un mur
+    elif x==29 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobRW) #Monstre vers la droite au-dessus d'un mur
+    elif x==30 :
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobUW) #Monstre vers le haut au-dessus d'un mur
 
 
 
@@ -371,93 +458,8 @@ def draw(canevas):
 ##                        if matrice[j][i]>=11 and matrice[j][i]<=18:
 ##                            matrice[j][i]=1
 
-        #ecran= zone de la matrice autour du personnage que l'on souhaite afficher
-        ecran = [charPos[X]-ecart_ecran,charPos[X]+ecart_ecran,charPos[Y]-ecart_ecran,charPos[Y]+ecart_ecran] #premierx,dernierx,premier y, et dernier y de l'ecran
-        # recadrage de l'ecran: si le personnage se situe pres d'un bord du labyrinthe alors on deplace l'écran pour ne pas afficher ce qui hors du labyritnhe
-        if ecran[0]<0:
-            ecran[0]=0                           #Par exemple, si le personage se situe en dessous de "ecart_ecran" sur la gauche, alors l'écran ne le suit plus et se cale sur le bord gauche
-            ecran[1]=2*ecart_ecran
-        if ecran[1]>=width:
-            ecran[1]=width-1
-            ecran[0]=width-(2*ecart_ecran)-1
-        if ecran[2]<0:
-            ecran[2]=0
-            ecran[3]=2*ecart_ecran
-        if ecran[3]>=height:
-            ecran[3]=height-1
-            ecran[2]=height-(2*ecart_ecran)-1
-        #recuperation des cases correspondantes dans la matrice pour les afficher
-        for j in range(ecran[2],ecran[3]+1):
-            for i in range(ecran[0],ecran[1]+1):
-                # la vraible x prend la valeur de chaque bloc a afficher successivement
-                x=matrice[j][i]
-                # les variables i2 et j2 informent la position relative du bloc cible dans l' "ecran"
-                j2=j-charPos[Y]+ecart_ecran
-                i2=i-charPos[X]+ecart_ecran
-                 # ces tests permettent d'eviter les erreurs pour i2 et j2 suite a un recadrage de l'ecran
-                if charPos[Y]<ecart_ecran:
-                    j2-=(ecart_ecran-charPos[Y])
-                if charPos[X]<ecart_ecran:
-                    i2-=(ecart_ecran-charPos[X])
-                if charPos[Y]>=(height-ecart_ecran):
-                    j2-=(height-ecart_ecran-charPos[Y]-1)
-                if charPos[X]>=(width-ecart_ecran):
-                    i2-=(width-ecart_ecran-charPos[X]-1)
+        displayScreen(canevas,matrice,charPos)
 
-
-                # on cree une image aux coordonnees i2 j2 selon la valeur de x
-                if x==1 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.floor) #Sol
-                elif x==0 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.wall) #Mur
-                elif x==2 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.door) #Porte
-                elif x==3 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charD) #Personnage vers le bas
-                elif x==4 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charL) #Personnage vers la gauche
-                elif x==5 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charR) #Personnage vers la droite
-                elif x==6 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charU) #Personnage vers le haut
-                elif x==7 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobD) #Monstre vers le bas
-                elif x==8 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobL) #Monstre vers la gauche
-                elif x==9 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobR) #Monstre vers la droite
-                elif x==10 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobU) #Monstre vers le haut
-                elif x==11 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipD) #Fouet droit vers le bas
-                elif x==12 or x==13:
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipH) #Fouet droit horizontal
-                elif x==14 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipU) #Fouet droit vers le haut
-                elif x==15 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndD) #Fin du fouet vers le bas
-                elif x==16 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndL) #Fin du fouet vers la gauche
-                elif x==17 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndR) #Fin du fouet vers la droite
-                elif x==18 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.whipEndU) #Fin du fouet vers le haut
-                elif x==23 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charDW) #Personnage vers le bas fouettant
-                elif x==24 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charLW) #Personnage vers la gauche fouettant
-                elif x==25 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charRW) #Personnage vers la droite fouettant
-                elif x==26 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.charUW) #Personnage vers le haut fouettant
-                elif x==27 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobDW) #Monstre vers le bas au-dessus d'un mur
-                elif x==28 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobLW) #Monstre vers la gauche au-dessus d'un mur
-                elif x==29 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobRW) #Monstre vers la droite au-dessus d'un mur
-                elif x==30 :
-                    canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.mobUW) #Monstre vers le haut au-dessus d'un mur
 
 
 def initialscreen():
