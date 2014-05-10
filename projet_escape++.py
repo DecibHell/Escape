@@ -30,9 +30,12 @@ s=0
 d=0
 mobSpawnZone=[[3],[2,4],[1,3,5]]
 whipping=0
-whiptimer=0
+whipTimer=0
 X=1
 Y=0
+
+timerMinute=2
+timerSecond=34
 
 #Correspondances dans le matrice :
 # 0: Mur
@@ -67,7 +70,7 @@ loadSprites()
 
 #Génération d'une matrice labyrinthique de dimensions widthxheight
 def creerLabyrinthe(width,height,nbMonsters):
-    global charPos,charVel,look,mobPos,mobVel,deadMob,seen,mobLook,compteurMob,matrice
+    global charPos,charVel,look,mobPos,mobVel,deadMob,seen,mobLook,mobTimer,matrice
     #matrice remplie de 0
     matrice2=[[0]*(width/2) for i in range(height/2)]
     matrice=[[0]*width for i in range(height)]
@@ -168,11 +171,11 @@ def creerLabyrinthe(width,height,nbMonsters):
     deadMob=[0 for loop in range(nbMonsters)]
     seen=[0 for loop in range(nbMonsters)]
     mobLook=[7 for loop in range(nbMonsters)]
-    compteurMob=[0 for loop in range(nbMonsters)]
+    mobTimer=[0 for loop in range(nbMonsters)]
     return matrice
 
 def mobManagement(mobID):
-    global mobVel,mobPos,matrice,mobLook,compteurMob,seen
+    global mobVel,mobPos,matrice,mobLook,mobTimer,seen
     if isBlockWhip(mobPos[mobID][X],mobPos[mobID][Y]):
         deadMob[mobID]=1
         mobPos[mobID]=[0,0]
@@ -205,8 +208,8 @@ def mobManagement(mobID):
                     mobVel[mobID][X]=abs(mobVelCopy[mobID][Y])*xDiff/abs(xDiff)
                     mobVel[mobID][Y]=abs(mobVelCopy[mobID][X])*yDiff/abs(yDiff)
 
-        if compteurMob[mobID]>=mobSpeed and isBlockFlyable(mobPos[mobID][X]+mobVel[mobID][X],mobPos[mobID][Y]+mobVel[mobID][Y]):
-            compteurMob[mobID]=1
+        if mobTimer[mobID]>=mobSpeed and isBlockFlyable(mobPos[mobID][X]+mobVel[mobID][X],mobPos[mobID][Y]+mobVel[mobID][Y]):
+            mobTimer[mobID]=1
             if mobLook[mobID]<11:
                 matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=1
             else :
@@ -225,7 +228,7 @@ def mobManagement(mobID):
                 mobLook[mobID]+=20
             matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=mobLook[mobID]
         else:
-            compteurMob[mobID]+=1
+            mobTimer[mobID]+=1
 
         if charPos[Y]-5<=mobPos[mobID][Y] and charPos[Y]+5>=mobPos[mobID][Y] and charPos[X]-5<=mobPos[mobID][X] and charPos[X]+5>=mobPos[mobID][X]:
             seen[mobID]=1
@@ -398,17 +401,11 @@ def keyrelease(event):
 
 #Dessin du canevas de jeu
 def draw(canevas):
-    global matrice,charPos,charVel,mobPos,mobVel,compteurMob,look
+    global matrice,charPos,charVel,mobPos,mobVel,mobTimer,look,gameInProgress,doorReached
     # si le personnage est sur la porte
     if matrice[charPos[Y]+charVel[Y]][charPos[X]+charVel[X]]==2:
-        # creer ecran de fin
-        canevas.delete(ALL)
-        canevas.create_rectangle(0,0,480,480,fill="black")
-        canevas.create_text(235,235,text="YOU ESCAPED!",fill="blue", font=50)
-        canevas.update()
-        # attendre 3s avant que le jeu recommence
-        canevas.after(3000)
-        matrice=creerLabyrinthe(width,height,nbMonsters)
+        gameInProgress=0
+        doorReached=1
     else:
         #Si la nouvelle position du personnage est un bloc de sol
         if isBlockOnFloor(charPos[X]+charVel[X],charPos[Y]+charVel[Y]):
@@ -447,7 +444,7 @@ def draw(canevas):
 
 
 def whipManagement(charPos,look):
-    global matrice,whiptimer,whipping,deadMob
+    global matrice,whipTimer,whipping,deadMob
     endedwhip=0
     if whipping==1:
         if look==3:
@@ -477,10 +474,10 @@ def whipManagement(charPos,look):
                 else:
                     matrice[yposition][xposition]=look+12
                     endedwhip=1
-        whiptimer+=1
-        if whiptimer>=10:
+        whipTimer+=1
+        if whipTimer>=10:
             whipping=0
-            whiptimer=0
+            whipTimer=0
             for j in range(height):
                 for i in range(width):
                     if matrice[j][i]>=11 and matrice[j][i]<=18:
@@ -616,6 +613,16 @@ def displayPauseMenu():
     button2.place(x=6*32,y=6*32)
     button3=Button(fenetre, text="Quit", command=exitApplication,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
     button3.place(x=6*32,y=8*32)
+
+def displayVictoryScreen():
+    # creer ecran de fin
+    canevas.delete(ALL)
+    canevas.create_image(240,240,image=SG.textsheet)
+    canevas.create_text(240,240,text="You escaped in "+str(timerMinute)+":"+str(timerSecond)+" !",fill="Black",font=1500)
+    canevas.update()
+    # attendre 3s avant que le jeu recommence
+    canevas.after(3000)
+    displayMainMenu()
 
 #Traitement des entrees clavier
 fenetre.bind_all("<KeyPress>",keydown)
