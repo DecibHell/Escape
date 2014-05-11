@@ -3,6 +3,7 @@ import random
 import pygame
 import time
 from SprManaging import *
+from ScoreManaging import *
 
 pygame.mixer.init()
 pygame.mixer.music.load("Soundtrack.ogg")
@@ -50,6 +51,7 @@ whipCooldown=1000
 whipSpeed=500
 X=1
 Y=0
+alphabet=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
 
 
 #Correspondances dans le matrice :
@@ -555,7 +557,8 @@ def setHardGame():
     createNewGame(3)
 
 def createNewGame(diff):
-    global nbMonsters,height,width,matrice,canevas
+    global nbMonsters,height,width,matrice,canevas,gameMode
+    gameMode=diff
     nbMonsters=2*diff
     height=50*diff
     width=50*diff
@@ -576,6 +579,9 @@ def runGame():
         canevas.update()
         canevas.delete(ALL)
         draw(canevas)
+        gameInProgress=0 #TODO
+        doorReached=1    #TODO
+
     if gamePaused:
         displayPauseMenu()
     if doorReached:
@@ -594,13 +600,17 @@ def displayPauseMenu():
     button3.place(x=6*32,y=8*32)
 
 def displayVictoryScreen():
-    global timerSecond
+    global timerSecond,rank
     canevas.delete(ALL)
     canevas.create_image(240,240,image=SG.textsheet)
     canevas.create_text(240,240,text="You escaped in %02d:%02d" % (timerSecond/60 , timerSecond%60)+" !",fill="Black",font=1500)
     canevas.update()
     canevas.after(5000)
-    displayMainMenu()
+##    rank=isHighScore(gameMode,timerSecond)
+    if rank>0:
+        displayEnterName()
+    else:
+        displayMainMenu()
 
 def displayDeathScreen():
     canevas.delete(ALL)
@@ -612,10 +622,59 @@ def displayDeathScreen():
     displayMainMenu()
 
 
+
+def displayEnterName():
+    global letter,button
+    canevas.delete(ALL)
+    canevas.create_image(240,240,image=SG.textsheet)
+    canevas.create_text(240,225,text="Enter your Pseudo :",fill="Black", font=1500)
+    button=[0,0,0]
+    letter=[0,0,0]
+    button[0]=Button(fenetre, text="A" ,command=changeLetter1,compound=CENTER,bd=0,highlightthickness=0,font=1000)
+    button[0].place(x=210,y=240)
+    button[1]=Button(fenetre, text="A", command=changeLetter2,compound=CENTER,bd=0,highlightthickness=0,font=1000)
+    button[1].place(x=230,y=240)
+    button[2]=Button(fenetre, text="A", command=changeLetter3,compound=CENTER,bd=0,highlightthickness=0,font=1000)
+    button[2].place(x=250,y=240)
+    button4=Button(fenetre, text="Submit", command=submitNewScore,image=SG.button,compound=CENTER,bd=0,highlightthickness=0,fg='White')
+    button4.place(x=6*32,y=270)
+
+def changeLetter1():
+    changeLetter(0)
+def changeLetter2():
+    changeLetter(1)
+def changeLetter3():
+    changeLetter(2)
+
+def changeLetter(order):
+    global letter,button
+    char=letter[order]
+    char+=1
+    if char>=26:
+        char=0
+    button[order]["text"]=alphabet[char]
+    letter[order]=char
+
+
+def submitNewScore():
+    global gameMode,timerSecond,letter
+    name=alphabet[letter[0]]+alphabet[letter[1]]+alphabet[letter[2]]
+    print "gameMode,name,timer = %d %s %d" % (gameMode,name,timerSecond)
+    submitScore(gameMode,name,timerSecond)
+    displayScoreboard()
+
+def displayScoreboard():
+    emptyMainWindow(canevas)
+    canevas.delete(ALL)
+    canevas.create_image(240,240,image=SG.textsheet)
+    print readScore(gameMode)
+
+
 #Traitement des entrees clavier
 fenetre.bind_all("<KeyPress>",keydown)
 fenetre.bind_all("<KeyRelease>",keyrelease)
 
+rank=2 #TODO
 
 displayMainMenu()
 fenetre.mainloop()
