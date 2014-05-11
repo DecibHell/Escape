@@ -66,6 +66,7 @@ timerSecond=34
 # 16: Fin du fouet vers la gauche
 # 17: Fin du fouet vers la droite
 # 18: Fin du fouet vers le haut
+# 19: Clé
 # 23: Personnage regard vers le bas fouettant
 # 24: Personnage regard vers la gauche fouettant
 # 25: Personnage regard vers la droite fouettant
@@ -79,7 +80,7 @@ loadSprites()
 
 #Génération d'une matrice labyrinthique de dimensions widthxheight
 def creerLabyrinthe(width,height,nbMonsters):
-    global charPos,charVel,look,mobPos,mobVel,deadMob,seen,mobLook,mobTimer,matrice
+    global charPos,charVel,look,mobPos,mobVel,deadMob,seen,mobLook,mobTimer,matrice,keyIsFound
     #matrice remplie de 0
     matrice2=[[0]*(width/2) for i in range(height/2)]
     matrice=[[0]*width for i in range(height)]
@@ -144,25 +145,34 @@ def creerLabyrinthe(width,height,nbMonsters):
             matrice[2*j][2*i+1]=x
             matrice[2*j+1][2*i+1]=x
 
-    l=[]
+    possible=[]
     #Placement aleatoire de la porte
     for loop in range(2,width-3):
         if isBlockEmpty(loop,2):
-            l.append([1,loop])
+            possible.append([1,loop])
     for loop in range(2,height-3):
         if isBlockEmpty(width-3,loop):
-            l.append([loop,width-2])
-    alea2=random.randint(0,len(l)-1)
-    matrice[l[alea2][Y]][l[alea2][X]]=2
-    if l[alea2][Y]<2:
-        matrice[l[alea2][Y]-1][l[alea2][X]]=1
+            possible.append([loop,width-2])
+    alea=random.randint(0,len(possible)-1)
+    matrice[possible[alea][Y]][possible[alea][X]]=2
+    if possible[alea][Y]<2:
+        matrice[possible[alea][Y]-1][possible[alea][X]]=1
     else:
-        matrice[l[alea2][Y]][l[alea2][X]+1]=1
+        matrice[possible[alea][Y]][possible[alea][X]+1]=1
     #Placement du personnage, que l'on informe dans la liste CharPos[y,x] et initialisation de sa vitesse CharVel[y,x]
     matrice[height-3][2]=3
     charPos=[height-3,2]
     charVel=[0,0]
     look=3
+    #Placement de la clé
+    possible=[]
+    for j in range (height/3,2*height/3):
+        for i in range (width/3,2*width/3):
+            if isBlockEmpty(i,j):
+                possible.append([j,i])
+    alea=random.randint(0,len(possible)-1)
+    matrice[possible[alea][Y]][possible[alea][X]]=19
+    keyIsFound=False
     #Apparition des monstres
     possible=[]
     mobPos=[]
@@ -361,12 +371,14 @@ def keyrelease(event):
 
 #Dessin du canevas de jeu
 def draw(canevas):
-    global matrice,charPos,charVel,charTimer,mobPos,mobVel,mobTimer,look,gameInProgress,doorReached,charKilled
+    global matrice,charPos,charVel,charTimer,mobPos,mobVel,mobTimer,look,gameInProgress,doorReached,charKilled,keyIsFound
     # si le personnage est sur la porte
-    if matrice[charPos[Y]+charVel[Y]][charPos[X]+charVel[X]]==2:
+    if matrice[charPos[Y]+charVel[Y]][charPos[X]+charVel[X]]==2 and keyIsFound:
         gameInProgress=0
         doorReached=1
     else:
+        if matrice[charPos[Y]+charVel[Y]][charPos[X]+charVel[X]]==19:
+            keyIsFound=True
         #Si la nouvelle position du personnage est un bloc de sol
         if isBlockOnFloor(charPos[X]+charVel[X],charPos[Y]+charVel[Y]) and getTime()>=charTimer+charSpeed:
             charTimer=getTime()
@@ -375,7 +387,7 @@ def draw(canevas):
             #On informe la variable "CharPos" de sa nouvelle position
             charPos[X]+=charVel[X]
             charPos[Y]+=charVel[Y]
-            #La variable look informe le regard du personnage en fonction de son dernier deplacement
+        #La variable look informe le regard du personnage en fonction de la derniere touche appuyee
         if charVel[Y]==1:
             look=3
         elif charVel[X]==-1:
