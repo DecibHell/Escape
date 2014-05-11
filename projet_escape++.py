@@ -17,6 +17,14 @@ def exitApplication():
 # Renvoie l'heure en millisecondes
 def getTime():
     return int(round(time.time() * 1000))
+# Incrémente timerSecond a chaque seconde de jeu
+def computeElapsedTime():
+    global timerSecond,startingTime
+    if getTime()-startingTime>=1000:
+        startingTime=getTime()
+        timerSecond+=1
+
+
 
 #Creation fenetre
 fenetre = Tk()
@@ -32,7 +40,7 @@ z=0
 q=0
 s=0
 d=0
-mobSpawnZone=[[3],[2,4],[1,3,5]]
+mobSpawnZone=[[[1,1],[5,5]],[[1,1],[3,3],[5,5],[5,1]],[[4,0],[2,2],[0,4],[2,6],[4,4],[6,2]]]
 charSpeed=75
 charTimer=0
 mobSpeed=200
@@ -43,8 +51,6 @@ whipSpeed=500
 X=1
 Y=0
 
-timerMinute=2
-timerSecond=34
 
 #Correspondances dans le matrice :
 # 0: Mur
@@ -80,7 +86,7 @@ loadSprites()
 
 #Génération d'une matrice labyrinthique de dimensions widthxheight
 def creerLabyrinthe(width,height,nbMonsters):
-    global charPos,charVel,look,mobPos,mobVel,deadMob,seen,mobLook,mobTimer,matrice,keyIsFound
+    global charPos,charVel,look,mobPos,mobVel,deadMob,seen,mobLook,mobTimer,matrice,keyIsFound,startingTime,timerSecond
     #matrice remplie de 0
     matrice2=[[0]*(width/2) for i in range(height/2)]
     matrice=[[0]*width for i in range(height)]
@@ -177,9 +183,9 @@ def creerLabyrinthe(width,height,nbMonsters):
     possible=[]
     mobPos=[]
     mobVel=[]
-    for loop in range(nbMonsters):
-        for j in range(mobSpawnZone[nbMonsters-1][loop]*height/8,(mobSpawnZone[nbMonsters-1][loop]+2)*height/8):
-            for i in range(mobSpawnZone[nbMonsters-1][loop]*width/8,(mobSpawnZone[nbMonsters-1][loop]+2)*width/8):
+    for mobID in range(nbMonsters):
+        for j in range(mobSpawnZone[nbMonsters/2-1][mobID][Y]*height/8,(mobSpawnZone[nbMonsters/2-1][mobID][Y]+2)*height/8):
+            for i in range(mobSpawnZone[nbMonsters/2-1][mobID][X]*width/8,(mobSpawnZone[nbMonsters/2-1][mobID][X]+2)*width/8):
                 if matrice[j][i]==1:
                     possible.append([j,i])
         alea=random.randint(0,len(possible)-1)
@@ -191,6 +197,8 @@ def creerLabyrinthe(width,height,nbMonsters):
     seen=[0 for loop in range(nbMonsters)]
     mobLook=[7 for loop in range(nbMonsters)]
     mobTimer=[0 for loop in range(nbMonsters)]
+    startingTime=getTime()
+    timerSecond=0
     return matrice
 
 def mobManagement(mobID):
@@ -373,6 +381,7 @@ def keyrelease(event):
 def draw(canevas):
     global matrice,charPos,charVel,charTimer,mobPos,mobVel,mobTimer,look,gameInProgress,doorReached,charKilled,keyIsFound
     # si le personnage est sur la porte
+    computeElapsedTime()
     if matrice[charPos[Y]+charVel[Y]][charPos[X]+charVel[X]]==2 and keyIsFound:
         gameInProgress=0
         doorReached=1
@@ -547,7 +556,7 @@ def setHardGame():
 
 def createNewGame(diff):
     global nbMonsters,height,width,matrice,canevas
-    nbMonsters=diff
+    nbMonsters=2*diff
     height=50*diff
     width=50*diff
     matrice=creerLabyrinthe(width,height,nbMonsters)
@@ -585,9 +594,10 @@ def displayPauseMenu():
     button3.place(x=6*32,y=8*32)
 
 def displayVictoryScreen():
+    global timerSecond
     canevas.delete(ALL)
     canevas.create_image(240,240,image=SG.textsheet)
-    canevas.create_text(240,240,text="You escaped in "+str(timerMinute)+":"+str(timerSecond)+" !",fill="Black",font=1500)
+    canevas.create_text(240,240,text="You escaped in %02d:%02d" % (timerSecond/60 , timerSecond%60)+" !",fill="Black",font=1500)
     canevas.update()
     canevas.after(5000)
     displayMainMenu()
