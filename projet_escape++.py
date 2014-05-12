@@ -3,6 +3,7 @@ import random
 import pygame
 import time
 from SprManaging import *
+from ScoreManaging import *
 
 pygame.mixer.init()
 pygame.mixer.music.load("Soundtrack.ogg")
@@ -49,6 +50,7 @@ whipCooldown=1000
 whipSpeed=500
 X=1
 Y=0
+alphabet=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
 
 
 #Correspondances dans le matrice :
@@ -382,8 +384,8 @@ def draw(canevas):
     # si le personnage est sur la porte
     computeElapsedTime()
     if matrice[charPos[Y]+charVel[Y]][charPos[X]+charVel[X]]==2 and keyIsFound:
-        gameInProgress=0
-        doorReached=1
+        gameInProgress=False
+        doorReached=True
     else:
         if matrice[charPos[Y]+charVel[Y]][charPos[X]+charVel[X]]==19:
             keyIsFound=True
@@ -442,11 +444,11 @@ def whipManagement(charPos,look):
             xposition2=xposition+dx
             yposition2=yposition+dy
 
-            if not isBlockOnFloor(xposition,yposition) and endedwhip==0:
+            if (not isBlockOnFloor(xposition,yposition) or isBlockKey(xposition,yposition)) and endedwhip==0 :
                 endedwhip=1
             elif endedwhip==0:
                 matrice[charPos[Y]][charPos[X]]=look+20
-                if (isBlockOnFloor(xposition2,yposition2)) and loop<2:
+                if not isBlockKey(xposition2,yposition2) and isBlockOnFloor(xposition2,yposition2) and loop<2:
                     matrice[yposition][xposition]=look+8
                 else:
                     matrice[yposition][xposition]=look+12
@@ -495,6 +497,18 @@ def isBlockWhip(x,y):
     else:
         return False
 
+# Renvoie TRUE si le block est une cle
+# Renvoie FALSE si on est en dehors de la matrice
+def isBlockKey(x,y):
+    if x<0 or x>=width:
+        return False
+    if y<0 or y>=height:
+        return False
+    if matrice[y][x]==19:
+        return True
+    else:
+        return False
+
 # Renvoie TRUE si le block est un sol vide
 # Renvoie FALSE si on est en dehors de la matrice
 def isBlockEmpty(x,y):
@@ -527,40 +541,80 @@ def emptyMainWindow(survivor=None):
 
 def displayMainMenu():
     emptyMainWindow()
-    label1=Label(fenetre,image=SG.title,bd=-2)
-    label1.place(x=0,y=0)
-    label2=Label(fenetre,image=SG.border,bd=-2)
-    label2.place(x=0,y=4*32)
-    label3=Label(fenetre,image=SG.border,bd=-2)
-    label3.place(x=9*32,y=4*32)
-    label4=Label(fenetre,image=SG.line,bd=-2)
-    label4.place(x=6*32,y=5*32)
-    label5=Label(fenetre,image=SG.line,bd=-2)
-    label5.place(x=6*32,y=7*32)
-    label6=Label(fenetre,image=SG.bottom,bd=-2)
-    label6.place(x=6*32,y=9*32)
+    title=Label(fenetre,image=SG.title,bd=-2)
+    title.place(x=0,y=0)
+    border1=Label(fenetre,image=SG.border,bd=-2)
+    border1.place(x=0,y=4*32)
+    border2=Label(fenetre,image=SG.border,bd=-2)
+    border2.place(x=9*32,y=4*32)
+    line1=Label(fenetre,image=SG.line,bd=-2)
+    line1.place(x=6*32,y=4*32)
+    line2=Label(fenetre,image=SG.line,bd=-2)
+    line2.place(x=6*32,y=6*32)
+    line3=Label(fenetre,image=SG.line,bd=-2)
+    line3.place(x=6*32,y=8*32)
+    line4=Label(fenetre,image=SG.line,bd=-2)
+    line4.place(x=6*32,y=10*32)
+    line5=Label(fenetre,image=SG.line,bd=-2)
+    line5.place(x=6*32,y=12*32)
+    line6=Label(fenetre,image=SG.line,bd=-2)
+    line6.place(x=6*32,y=14*32)
     button1=Button(fenetre, text="Easy" ,command=setEasyGame ,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
-    button1.place(x=6*32,y=4*32)
+    button1.place(x=6*32,y=5*32)
     button2=Button(fenetre, text="Medium", command=setMediumGame,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
-    button2.place(x=6*32,y=6*32)
+    button2.place(x=6*32,y=7*32)
     button3=Button(fenetre, text="Hard", command=setHardGame,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
-    button3.place(x=6*32,y=8*32)
+    button3.place(x=6*32,y=9*32)
+    button4=Button(fenetre, text="Highscores", command=displayChooseScore,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button4.place(x=6*32,y=11*32)
+    button5=Button(fenetre, text="Quit", command=exitApplication,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button5.place(x=6*32,y=13*32)
 
 def setEasyGame():
-    createNewGame(1)
+    displayControls(1)
 def setMediumGame():
-    createNewGame(2)
+    displayControls(2)
 def setHardGame():
+    displayControls(3)
+
+def displayControls(diff):
+    global canevas
+    emptyMainWindow()
+    canevas = Canvas(fenetre, width = resolution*(ecart_ecran*2+1)-2, height = resolution*(ecart_ecran*2+1)-2,bg="white")
+    canevas.place(x=0,y=0)
+    canevas.create_image(240,240,image=SG.textsheet)
+    canevas.create_text(240,100,text="Welcome in Escape!",fill="Black", font=1500)
+    canevas.create_text(240,180,text="Move with the arrows",fill="Black", font=1500)
+    canevas.create_text(240,210,text="Whip with the space bar",fill="Black", font=1500)
+    canevas.create_text(240,240,text="Pause with Esc",fill="Black", font=1500)
+    canevas.create_text(240,270,text="Find the key, and Escape!",fill="Black", font=1500)
+    if diff==1:
+        button1=Button(fenetre, text="GO!", command=launchEasyGame,image=SG.button,compound=CENTER,bd=0,highlightthickness=0,fg='White')
+    elif diff==2:
+        button1=Button(fenetre, text="GO!", command=launchMediumGame,image=SG.button,compound=CENTER,bd=0,highlightthickness=0,fg='White')
+    else:
+        button1=Button(fenetre, text="GO!", command=launchHardGame,image=SG.button,compound=CENTER,bd=0,highlightthickness=0,fg='White')
+    button1.place(x=6*32,y=300)
+    button2=Button(fenetre, text="Return to Main", command=displayMainMenu,image=SG.button,compound=CENTER,bd=0,highlightthickness=0,fg='White')
+    button2.place(x=6*32,y=340)
+
+def launchEasyGame():
+    canevas.delete(ALL)
+    createNewGame(1)
+def launchMediumGame():
+    canevas.delete(ALL)
+    createNewGame(2)
+def launchHardGame():
+    canevas.delete(ALL)
     createNewGame(3)
 
 def createNewGame(diff):
-    global nbMonsters,height,width,matrice,canevas
+    global nbMonsters,height,width,matrice,gameMode
+    gameMode=diff
     nbMonsters=2*diff
     height=50*diff
     width=50*diff
     matrice=creerLabyrinthe(width,height,nbMonsters)
-    canevas = Canvas(fenetre, width = resolution*(ecart_ecran*2+1)-2, height = resolution*(ecart_ecran*2+1)-2,bg="white")
-    canevas.place(x=0,y=0)
     runGame()
 
 def runGame():
@@ -575,6 +629,9 @@ def runGame():
         canevas.update()
         canevas.delete(ALL)
         draw(canevas)
+##        gameInProgress=0 #TODO
+##        doorReached=1    #TODO
+
     if gamePaused:
         displayPauseMenu()
     if doorReached:
@@ -593,13 +650,17 @@ def displayPauseMenu():
     button3.place(x=6*32,y=8*32)
 
 def displayVictoryScreen():
-    global timerSecond
+    global timerSecond,rank
     canevas.delete(ALL)
     canevas.create_image(240,240,image=SG.textsheet)
     canevas.create_text(240,240,text="You escaped in %02d:%02d" % (timerSecond/60 , timerSecond%60)+" !",fill="Black",font=1500)
     canevas.update()
     canevas.after(5000)
-    displayMainMenu()
+    rank=isHighScore(gameMode,timerSecond)
+    if rank>0:
+        displayEnterName()
+    else:
+        displayMainMenu()
 
 def displayDeathScreen():
     canevas.delete(ALL)
@@ -610,11 +671,116 @@ def displayDeathScreen():
     canevas.after(5000)
     displayMainMenu()
 
+def displayEnterName():
+    global letter,button
+    canevas.delete(ALL)
+    canevas.create_image(240,240,image=SG.textsheet)
+    canevas.create_text(240,225,text="Enter your Pseudo :",fill="Black", font=1500)
+    button=[0,0,0]
+    letter=[0,0,0]
+    button[0]=Button(fenetre, text="A" ,command=changeLetter1,compound=CENTER,bd=0,highlightthickness=0,font=1000)
+    button[0].place(x=210,y=240)
+    button[1]=Button(fenetre, text="A", command=changeLetter2,compound=CENTER,bd=0,highlightthickness=0,font=1000)
+    button[1].place(x=230,y=240)
+    button[2]=Button(fenetre, text="A", command=changeLetter3,compound=CENTER,bd=0,highlightthickness=0,font=1000)
+    button[2].place(x=250,y=240)
+    button4=Button(fenetre, text="Submit", command=submitNewScore,image=SG.button,compound=CENTER,bd=0,highlightthickness=0,fg='White')
+    button4.place(x=6*32,y=270)
+
+def changeLetter1():
+    changeLetter(0)
+def changeLetter2():
+    changeLetter(1)
+def changeLetter3():
+    changeLetter(2)
+
+def changeLetter(order):
+    global letter,button
+    char=letter[order]
+    char+=1
+    if char>=26:
+        char=0
+    button[order]["text"]=alphabet[char]
+    letter[order]=char
+
+
+def submitNewScore():
+    global gameMode,timerSecond,letter
+    name=alphabet[letter[0]]+alphabet[letter[1]]+alphabet[letter[2]]
+    submitScore(gameMode,name,timerSecond)
+    displayScoreboard(gameMode)
+
+def displayChooseScore():
+    emptyMainWindow()
+    title=Label(fenetre,image=SG.title,bd=-2)
+    title.place(x=0,y=0)
+    border1=Label(fenetre,image=SG.border,bd=-2)
+    border1.place(x=0,y=4*32)
+    border2=Label(fenetre,image=SG.border,bd=-2)
+    border2.place(x=9*32,y=4*32)
+    line1=Label(fenetre,image=SG.line,bd=-2)
+    line1.place(x=6*32,y=4*32)
+    line2=Label(fenetre,image=SG.line,bd=-2)
+    line2.place(x=6*32,y=6*32)
+    line3=Label(fenetre,image=SG.line,bd=-2)
+    line3.place(x=6*32,y=8*32)
+    line4=Label(fenetre,image=SG.line,bd=-2)
+    line4.place(x=6*32,y=10*32)
+    line5=Label(fenetre,image=SG.line,bd=-2)
+    line5.place(x=6*32,y=11*32)
+    line6=Label(fenetre,image=SG.line,bd=-2)
+    line6.place(x=6*32,y=12*32)
+    line7=Label(fenetre,image=SG.line,bd=-2)
+    line7.place(x=6*32,y=13*32)
+    line8=Label(fenetre,image=SG.line,bd=-2)
+    line8.place(x=6*32,y=14*32)
+    button1=Button(fenetre, text="Noob" ,command=setEasyScore ,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button1.place(x=6*32,y=5*32)
+    button2=Button(fenetre, text="Casual Gamer", command=setMediumScore,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button2.place(x=6*32,y=7*32)
+    button3=Button(fenetre, text="Hardcore Gamer", command=setHardScore,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button3.place(x=6*32,y=9*32)
+
+def setEasyScore():
+    global canevas
+    canevas = Canvas(fenetre, width = resolution*(ecart_ecran*2+1)-2, height = resolution*(ecart_ecran*2+1)-2,bg="white")
+    canevas.place(x=0,y=0)
+    displayScoreboard(1)
+
+def setMediumScore():
+    global canevas
+    canevas = Canvas(fenetre, width = resolution*(ecart_ecran*2+1)-2, height = resolution*(ecart_ecran*2+1)-2,bg="white")
+    canevas.place(x=0,y=0)
+    displayScoreboard(2)
+
+def setHardScore():
+    global canevas
+    canevas = Canvas(fenetre, width = resolution*(ecart_ecran*2+1)-2, height = resolution*(ecart_ecran*2+1)-2,bg="white")
+    canevas.place(x=0,y=0)
+    displayScoreboard(3)
+
+def displayScoreboard(gameMode):
+    emptyMainWindow(canevas)
+    canevas.delete(ALL)
+    canevas.create_image(240,240,image=SG.textsheet)
+    scoreBoard=readScore(gameMode)
+    if gameMode==1:
+        head="EASY HIGHSCORES"
+    elif gameMode==2:
+        head="MEDIUM HIGHSCORES"
+    else:
+        head="HARD HIGHSCORES"
+    canevas.create_text(240,100,text=head,fill="Black", font=1500)
+    for player in range(10):
+        canevas.create_text(240,140+20*player,text=scoreBoard[player][0]+"      %02d:%02d" % (scoreBoard[player][1]/60 , scoreBoard[player][1]%60),fill="Black", font=1500)
+    button=Button(fenetre, text="Back to Main", command=displayMainMenu,image=SG.button,compound=CENTER,bd=0,highlightthickness=0,fg='White')
+    button.place(x=6*32,y=350)
 
 #Traitement des entrees clavier
 fenetre.bind_all("<KeyPress>",keydown)
 fenetre.bind_all("<KeyRelease>",keyrelease)
 
+##rank=2 #TODO
 
 displayMainMenu()
 fenetre.mainloop()
