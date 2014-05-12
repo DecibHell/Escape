@@ -25,7 +25,6 @@ def computeElapsedTime():
         timerSecond+=1
 
 
-
 #Creation fenetre
 fenetre = Tk()
 fenetre.protocol("WM_DELETE_WINDOW", exitApplication)
