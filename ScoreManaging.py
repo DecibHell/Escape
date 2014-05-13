@@ -77,8 +77,3 @@ def writeScore(gameMode,scoreBoard):
 def submitScore(gameMode,name,score):
     scoreBoard=insertScore(gameMode,name,score)
     writeScore(gameMode,scoreBoard)
-
-##
-##writeScore(1,insertScore(1,'GOD',42))
-
-##print(readScore(3))

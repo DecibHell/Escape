@@ -5,12 +5,13 @@ import time
 from SprManaging import *
 from ScoreManaging import *
 
+#Chargement de la musique, et lancement de cette derniere
 pygame.mixer.init()
 pygame.mixer.music.load("Soundtrack.ogg")
 pygame.mixer.music.set_volume(0.7)
 pygame.mixer.music.play(-1)
 
-#Sortie du programme
+#Sortie du programme et arret de la musique
 def exitApplication():
     fenetre.destroy()
     pygame.mixer.music.stop()
@@ -28,8 +29,11 @@ def computeElapsedTime():
 
 #Creation fenetre
 fenetre = Tk()
+#Modifie le protocole associe a la touche de sortie de la fenetre
 fenetre.protocol("WM_DELETE_WINDOW", exitApplication)
 fenetre.geometry("%dx%d%+d%+d" % (480,480,(fenetre.winfo_screenwidth()-480)//2,(fenetre.winfo_screenheight()-480)//2))
+fenetre.iconbitmap('icon.ico')
+fenetre.title('Escape')
 
 #Creation d'un canevas
 
@@ -83,6 +87,7 @@ alphabet=['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R
 # 29: Monstre regard vers la droite au-dessus d'un mur
 # 30: Monstre regard vers le haut au-dessus d'un mur
 
+#Charge les sprites du jeu. Fonction definie dans SprManaging.py
 loadSprites()
 
 #Génération d'une matrice labyrinthique de dimensions widthxheight
@@ -162,6 +167,7 @@ def creerLabyrinthe(width,height,nbMonsters):
             possible.append([loop,width-2])
     alea=random.randint(0,len(possible)-1)
     matrice[possible[alea][Y]][possible[alea][X]]=2
+    #Placement d'un bloc de sol derriere la porte
     if possible[alea][Y]<2:
         matrice[possible[alea][Y]-1][possible[alea][X]]=1
     else:
@@ -202,12 +208,16 @@ def creerLabyrinthe(width,height,nbMonsters):
     timerSecond=0
     return matrice
 
+#Gere les deplacements et interactions du monstre
 def mobManagement(mobID):
     global mobVel,mobPos,matrice,mobLook,mobTimer,seen
+    #Le monstre est-il tue?
     if isBlockWhip(mobPos[mobID][X],mobPos[mobID][Y]):
         deadMob[mobID]=1
         mobPos[mobID]=[0,0]
+    #Si il n'est pas encore mort, le deplacer
     if deadMob[mobID]==0:
+        #Si le joueur n'est pas detecte
         if seen[mobID]==0:
             alea=random.randint(1,4)
             if alea==1:
@@ -220,6 +230,7 @@ def mobManagement(mobID):
                 mobVel[mobID]=[-1,0]
             if not isBlockEmpty(mobPos[mobID][X]+mobVel[mobID][X],mobPos[mobID][Y]+mobVel[mobID][Y]):
                 mobVel[mobID]=[0,0]
+        #Si le joueur est detecte
         else:
             xDiff=charPos[X]-mobPos[mobID][X]
             yDiff=charPos[Y]-mobPos[mobID][Y]
@@ -227,6 +238,7 @@ def mobManagement(mobID):
                 mobVel[mobID]=[0,xDiff/abs(xDiff)]
             elif yDiff!=0:
                 mobVel[mobID]=[yDiff/abs(yDiff),0]
+            #Permet de contourner un obstacle
             if not isBlockFlyable(mobPos[mobID][X]+mobVel[mobID][X],mobPos[mobID][Y]+mobVel[mobID][Y]):
                 mobVelCopy=mobVel
                 if xDiff==0 or yDiff==0:
@@ -235,7 +247,7 @@ def mobManagement(mobID):
                 else:
                     mobVel[mobID][X]=abs(mobVelCopy[mobID][Y])*xDiff/abs(xDiff)
                     mobVel[mobID][Y]=abs(mobVelCopy[mobID][X])*yDiff/abs(yDiff)
-
+        #Deplacer le monstre dans la matrice si il peut se deplacer sur le bloc et que le timer le permet
         if getTime()>=mobTimer[mobID]+mobSpeed and isBlockFlyable(mobPos[mobID][X]+mobVel[mobID][X],mobPos[mobID][Y]+mobVel[mobID][Y]):
             mobTimer[mobID]=getTime()
             if mobLook[mobID]<11:
@@ -255,10 +267,11 @@ def mobManagement(mobID):
             if matrice[mobPos[mobID][Y]][mobPos[mobID][X]]==0:
                 mobLook[mobID]+=20
             matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=mobLook[mobID]
-
+        #Detection du joueur
         if charPos[Y]-5<=mobPos[mobID][Y] and charPos[Y]+5>=mobPos[mobID][Y] and charPos[X]-5<=mobPos[mobID][X] and charPos[X]+5>=mobPos[mobID][X]:
             seen[mobID]=1
 
+#Affiche la matrice dans le canevas
 def displayScreen(canevas,matrice,charPos):
     #ecran= zone de la matrice autour du personnage que l'on souhaite afficher
     ecran = [charPos[X]-ecart_ecran,charPos[X]+ecart_ecran,charPos[Y]-ecart_ecran,charPos[Y]+ecart_ecran] #premierx,dernierx,premier y, et dernier y de l'ecran
@@ -298,6 +311,7 @@ def displayScreen(canevas,matrice,charPos):
 def displayBlock(canevas,x,i2,j2):
     canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.blocks[x])
 
+#Fais fouetter le personnage seulement si le cooldown est ecoule
 def doWhip():
     global whipTimer,whipping,charVel
     if getTime()>=whipCooldown+whipTimer:
@@ -306,7 +320,7 @@ def doWhip():
         whipTimer=getTime()
 
 #Si une touche est enfoncée
-def keydown(event):
+def keypress(event):
     key=event.keysym
     global charVel,z,q,s,d,whipping,whipTimer,gameInProgress,gamePaused
     if key=="Up" and whipping==0:
@@ -377,8 +391,7 @@ def keyrelease(event):
             charVel[X]=-1
 
 
-
-#Dessin du canevas de jeu
+#Recalcule la matrice, et l'affiche
 def draw(canevas):
     global matrice,charPos,charVel,charTimer,mobPos,mobVel,mobTimer,look,gameInProgress,doorReached,charKilled,keyIsFound
     # si le personnage est sur la porte
@@ -420,8 +433,7 @@ def draw(canevas):
         #Affichage
         displayScreen(canevas,matrice,charPos)
 
-
-
+#Gere le fouet
 def whipManagement(charPos,look):
     global matrice,whipTimer,whipping,deadMob
     endedwhip=0
@@ -443,7 +455,6 @@ def whipManagement(charPos,look):
             yposition=charPos[Y]+dy*(loop+1)
             xposition2=xposition+dx
             yposition2=yposition+dy
-
             if (not isBlockOnFloor(xposition,yposition) or isBlockKey(xposition,yposition)) and endedwhip==0 :
                 endedwhip=1
             elif endedwhip==0:
@@ -539,6 +550,7 @@ def emptyMainWindow(survivor=None):
         if child!=survivor:
             child.destroy()
 
+#Menu principal
 def displayMainMenu():
     emptyMainWindow()
     title=Label(fenetre,image=SG.title,bd=-2)
@@ -577,6 +589,7 @@ def setMediumGame():
 def setHardGame():
     displayControls(3)
 
+#Menu des controles
 def displayControls(diff):
     global canevas
     emptyMainWindow()
@@ -608,6 +621,7 @@ def launchHardGame():
     canevas.delete(ALL)
     createNewGame(3)
 
+#Cree une nouvelle partie
 def createNewGame(diff):
     global nbMonsters,height,width,matrice,gameMode
     gameMode=diff
@@ -617,6 +631,7 @@ def createNewGame(diff):
     matrice=creerLabyrinthe(width,height,nbMonsters)
     runGame()
 
+#Lance le jeu et l'affiche
 def runGame():
     global matrice,gameInProgress,gamePaused,doorReached,charKilled,canevas
     emptyMainWindow(canevas)
@@ -629,8 +644,6 @@ def runGame():
         canevas.update()
         canevas.delete(ALL)
         draw(canevas)
-##        gameInProgress=0 #TODO
-##        doorReached=1    #TODO
 
     if gamePaused:
         displayPauseMenu()
@@ -639,6 +652,7 @@ def runGame():
     if charKilled:
         displayDeathScreen()
 
+#Menu de pause
 def displayPauseMenu():
     label1=Label(fenetre,image=SG.pause,bd=-2)
     label1.place(x=161,y=97)
@@ -649,6 +663,7 @@ def displayPauseMenu():
     button3=Button(fenetre, text="Quit", command=exitApplication,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
     button3.place(x=6*32,y=8*32)
 
+#Ecran de victoire
 def displayVictoryScreen():
     global timerSecond,rank
     canevas.delete(ALL)
@@ -662,6 +677,7 @@ def displayVictoryScreen():
     else:
         displayMainMenu()
 
+#Ecran de defaite
 def displayDeathScreen():
     canevas.delete(ALL)
     canevas.create_image(240,240,image=SG.textsheet)
@@ -671,6 +687,7 @@ def displayDeathScreen():
     canevas.after(5000)
     displayMainMenu()
 
+#Ecran de selection du tag
 def displayEnterName():
     global letter,button
     canevas.delete(ALL)
@@ -694,6 +711,7 @@ def changeLetter2():
 def changeLetter3():
     changeLetter(2)
 
+#Change la lettre selectionnee
 def changeLetter(order):
     global letter,button
     char=letter[order]
@@ -703,13 +721,14 @@ def changeLetter(order):
     button[order]["text"]=alphabet[char]
     letter[order]=char
 
-
+#Enregistre le nouveau score dans les fichiers de score
 def submitNewScore():
     global gameMode,timerSecond,letter
     name=alphabet[letter[0]]+alphabet[letter[1]]+alphabet[letter[2]]
     submitScore(gameMode,name,timerSecond)
     displayScoreboard(gameMode)
 
+#Menu de selection de l'ecran des highscores
 def displayChooseScore():
     emptyMainWindow()
     title=Label(fenetre,image=SG.title,bd=-2)
@@ -734,11 +753,11 @@ def displayChooseScore():
     line7.place(x=6*32,y=13*32)
     line8=Label(fenetre,image=SG.line,bd=-2)
     line8.place(x=6*32,y=14*32)
-    button1=Button(fenetre, text="Noob" ,command=setEasyScore ,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button1=Button(fenetre, text="Easy" ,command=setEasyScore ,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
     button1.place(x=6*32,y=5*32)
-    button2=Button(fenetre, text="Casual Gamer", command=setMediumScore,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button2=Button(fenetre, text="Medium", command=setMediumScore,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
     button2.place(x=6*32,y=7*32)
-    button3=Button(fenetre, text="Hardcore Gamer", command=setHardScore,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
+    button3=Button(fenetre, text="Hard", command=setHardScore,image=SG.button,compound=CENTER,bd=0,fg='White',highlightthickness=0)
     button3.place(x=6*32,y=9*32)
 
 def setEasyScore():
@@ -759,6 +778,7 @@ def setHardScore():
     canevas.place(x=0,y=0)
     displayScoreboard(3)
 
+#Tableau des highscores
 def displayScoreboard(gameMode):
     emptyMainWindow(canevas)
     canevas.delete(ALL)
@@ -777,10 +797,9 @@ def displayScoreboard(gameMode):
     button.place(x=6*32,y=350)
 
 #Traitement des entrees clavier
-fenetre.bind_all("<KeyPress>",keydown)
+fenetre.bind_all("<KeyPress>",keypress)
 fenetre.bind_all("<KeyRelease>",keyrelease)
 
-##rank=2 #TODO
 
 displayMainMenu()
 fenetre.mainloop()

@@ -94,6 +94,7 @@ def loadSprites():
 
     SG.border = cutSprite(background,0,0,192,352)
     SG.line = cutSprite(background,0,0,96,32)
+    #Liste ordonnee des blocks, selon leur ID
     SG.blocks = [ SG.wall, SG.floor, SG.door, \
                SG.charD, SG.charL, SG.charR, SG.charU, \
                SG.mobD, SG.mobL, SG.mobR, SG.mobU, \
