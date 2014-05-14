@@ -307,6 +307,13 @@ def displayScreen(canevas,matrice,charPos):
                 i2-=(width-ecart_ecran-charPos[X]-1)
             # on cree une image aux coordonnees i2 j2 selon la valeur de x
             displayBlock(canevas,x,i2,j2)
+    if keyIsFound:
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.KeyBlock)
+    else:
+        canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.noKeyBlock)
+    canevas.create_image(49,464,image=SG.button)
+    canevas.create_text(50,464,text="%02d:%02d" % (timerSecond/60 , timerSecond%60),fill="White",font=1500)
+
 
 def displayBlock(canevas,x,i2,j2):
     canevas.create_image(i2*resolution+17,j2*resolution+17,image=SG.blocks[x])

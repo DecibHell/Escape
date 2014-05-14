@@ -17,6 +17,8 @@ class SG:
     floor=None
     door=None
     key=None
+    noKeyBlock=None
+    KeyBlock=None
     mobD=None
     mobU=None
     mobL=None
@@ -72,6 +74,8 @@ def loadSprites():
     SG.door = cutSprite(sprites,32,64,32,32)
     SG.key = cutSprite(sprites,32,96,32,32)
     SG.button = cutSprite(sprites,64,128,96,32)
+    SG.noKeyBlock = cutSprite(sprites,0,224,32,32)
+    SG.KeyBlock = cutSprite(sprites,64,224,32,32)
 
     SG.mobD = cutSprite(sprites,64,64,32,32)
     SG.mobL = cutSprite(sprites,96,96,32,32)
