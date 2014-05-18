@@ -149,6 +149,7 @@ def creerLabyrinthe(width,height,nbMonsters):
         if len(chemin)==1:                  #Explorer tous les chemins, jusqu'à ce que la liste "chemin" ne contienne plus que le bloc de départ
             k+=1
 
+    #Elargissement de la matrice
     for j in range(height/2):
         for i in range(width/2):
             x=matrice2[j][i]
@@ -247,8 +248,8 @@ def mobManagement(mobID):
                 else:
                     mobVel[mobID][X]=abs(mobVelCopy[mobID][Y])*xDiff/abs(xDiff)
                     mobVel[mobID][Y]=abs(mobVelCopy[mobID][X])*yDiff/abs(yDiff)
-        #Deplacer le monstre dans la matrice si il peut se deplacer sur le bloc et que le timer le permet
-        if getTime()>=mobTimer[mobID]+mobSpeed and isBlockFlyable(mobPos[mobID][X]+mobVel[mobID][X],mobPos[mobID][Y]+mobVel[mobID][Y]):
+        #Deplacer le monstre dans la matrice si le timer le permet
+        if getTime()>=mobTimer[mobID]+mobSpeed:
             mobTimer[mobID]=getTime()
             if mobLook[mobID]<11:
                 matrice[mobPos[mobID][Y]][mobPos[mobID][X]]=1
@@ -702,11 +703,11 @@ def displayEnterName():
     canevas.create_text(240,225,text="Enter your Pseudo :",fill="Black", font=1500)
     button=[0,0,0]
     letter=[0,0,0]
-    button[0]=Button(fenetre, text="A" ,command=changeLetter1,compound=CENTER,bd=0,highlightthickness=0,font=1000)
+    button[0]=Button(fenetre, text="A" ,command=changeLetter1,image=SG.letter,fg='White',compound=CENTER,bd=0,highlightthickness=0,font=1000)
     button[0].place(x=210,y=240)
-    button[1]=Button(fenetre, text="A", command=changeLetter2,compound=CENTER,bd=0,highlightthickness=0,font=1000)
+    button[1]=Button(fenetre, text="A", command=changeLetter2,image=SG.letter,fg='White',compound=CENTER,bd=0,highlightthickness=0,font=1000)
     button[1].place(x=230,y=240)
-    button[2]=Button(fenetre, text="A", command=changeLetter3,compound=CENTER,bd=0,highlightthickness=0,font=1000)
+    button[2]=Button(fenetre, text="A", command=changeLetter3,image=SG.letter,fg='White',compound=CENTER,bd=0,highlightthickness=0,font=1000)
     button[2].place(x=250,y=240)
     button4=Button(fenetre, text="Submit", command=submitNewScore,image=SG.button,compound=CENTER,bd=0,highlightthickness=0,fg='White')
     button4.place(x=6*32,y=270)

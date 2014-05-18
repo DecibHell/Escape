@@ -4,6 +4,7 @@ from PIL import Image , ImageTk
 class SG:
     title=None
     textsheet=None
+    letter=None
     pause=None
     charD=None
     charL=None
@@ -76,6 +77,7 @@ def loadSprites():
     SG.button = cutSprite(sprites,64,128,96,32)
     SG.noKeyBlock = cutSprite(sprites,0,224,32,32)
     SG.KeyBlock = cutSprite(sprites,64,224,32,32)
+    SG.letter = cutSprite(sprites,74,170,16,22)
 
     SG.mobD = cutSprite(sprites,64,64,32,32)
     SG.mobL = cutSprite(sprites,96,96,32,32)
